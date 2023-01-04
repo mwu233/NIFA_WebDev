@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width", initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Crop Yield Prediction Map</title>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.6.0/dist/leaflet.css" integrity="sha512-xwE/Az9zrjBIphAcBb3F6JVqxf46+CDLwfLMHloNu6KEQCAWi6HcDUbeOfBIptF7tcCzusKFjFw2yuvEpDL9wQ==" crossorigin="" />
+    <link href="https://maxcdn.bootstrapcdn.com/font-awesome/4.1.0/css/font-awesome.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="//code.jquery.com/ui/1.12.1/themes/base/jquery-ui.css">
+<!--    <link rel="stylesheet" href="css/leaflet-control-bar.css" />-->
+    <link rel="stylesheet" href="css/leaflet-sidebar.css" />
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+    <div id="sidebar" class="sidebar collapsed">
+        <!-- Nav tabs -->
+        <div class="sidebar-tabs">
+            <ul role="tablist">
+                <li><a href="#home" role="tab"><i class="fa fa-bars fa-2x"></i></a></li>
+                <li><a href="#info" role="tab"><i class="fa fa-info fa-2x"></i></a></li>
+<!--                <li class="disabled"><a href="#messages" role="tab"><i class="fa fa-envelope"></i></a></li>-->
+                <li><a href="#database" role="tab"><i class="fa fa-database fa-2x"></i></a></li>
+                <li><a href="#edit" role="tab"><i class="fa fa-edit fa-2x"></i></a></li>
+                <li><a href="#download" role="tab"><i class="fa fa-download fa-2x"></i></a></li>
+                <li><a href="#save" role="tab"><i class="fa fa-save fa-2x"></i></a></li>
+                <li><a href="#profile" role="tab"><i class="fa fa-user fa-2x"></i></a></li>
+                <li><a href="#messages" role="tab"><i class="fa fa-envelope fa-2x"></i></a></li>
+                <li><a href="https://github.com/mwu233" role="tab" target="_blank"><i class="fa fa-github fa-2x"></i></a></li>
+            </ul>
+
+            <ul role="tablist">
+                <li><a href="#settings" role="tab"><i class="fa fa-gear fa-2x"></i></a></li>
+            </ul>
+        </div>
+
+        <!-- Tab panes -->
+        <div class="sidebar-content">
+            <div class="sidebar-pane" id="home">
+                <h1 class="sidebar-header">
+                    Project Introduction
+                    <span class="sidebar-close"><i class="fa fa-caret-left"></i></span>
+                </h1>
+                <p>References: <a href="https://www.sciencedirect.com/science/article/abs/pii/S0034425721001267">Corn yield prediction and uncertainty analysis based on remotely sensed variables using a Bayesian neural network approach</a>.</p>
+                <p class="lorem">Lorem ipsum dolor sit amet, consetetur sadipscing elitr, sed diam nonumy eirmod tempor invidunt ut labore et dolore magna aliquyam erat, sed diam voluptua. At vero eos et accusam et justo duo dolores et ea rebum. Stet clita kasd gubergren, no sea takimata sanctus est Lorem ipsum dolor sit amet. Lorem ipsum dolor sit amet, consetetur sadipscing elitr, sed diam nonumy eirmod tempor invidunt ut labore et dolore magna aliquyam erat, sed diam voluptua. At vero eos et accusam et justo duo dolores et ea rebum. Stet clita kasd gubergren, no sea takimata sanctus est Lorem ipsum dolor sit amet.</p>
+                <p class="lorem">Lorem ipsum dolor sit amet, consetetur sadipscing elitr, sed diam nonumy eirmod tempor invidunt ut labore et dolore magna aliquyam erat, sed diam voluptua. At vero eos et accusam et justo duo dolores et ea rebum. Stet clita kasd gubergren, no sea takimata sanctus est Lorem ipsum dolor sit amet. Lorem ipsum dolor sit amet, consetetur sadipscing elitr, sed diam nonumy eirmod tempor invidunt ut labore et dolore magna aliquyam erat, sed diam voluptua. At vero eos et accusam et justo duo dolores et ea rebum. Stet clita kasd gubergren, no sea takimata sanctus est Lorem ipsum dolor sit amet.</p>
+            </div>
+            <div class="sidebar-pane" id="info">
+                <h1 class="sidebar-header">Map Information<span class="sidebar-close"><i class="fa fa-caret-left"></i></span></h1>
+                <p class="lorem">Lorem ipsum dolor sit amet, consetetur sadipscing elitr, sed diam nonumy eirmod tempor invidunt ut labore et dolore magna aliquyam erat, sed diam voluptua. At vero eos et accusam et justo duo dolores et ea rebum. Stet clita kasd gubergren, no sea takimata sanctus est Lorem ipsum dolor sit amet. Lorem ipsum dolor sit amet, consetetur sadipscing elitr, sed diam nonumy eirmod tempor invidunt ut labore et dolore magna aliquyam erat, sed diam voluptua. At vero eos et accusam et justo duo dolores et ea rebum. Stet clita kasd gubergren, no sea takimata sanctus est Lorem ipsum dolor sit amet.</p>
+                <p class="lorem">Lorem ipsum dolor sit amet, consetetur sadipscing elitr, sed diam nonumy eirmod tempor invidunt ut labore et dolore magna aliquyam erat, sed diam voluptua. At vero eos et accusam et justo duo dolores et ea rebum. Stet clita kasd gubergren, no sea takimata sanctus est Lorem ipsum dolor sit amet. Lorem ipsum dolor sit amet, consetetur sadipscing elitr, sed diam nonumy eirmod tempor invidunt ut labore et dolore magna aliquyam erat, sed diam voluptua. At vero eos et accusam et justo duo dolores et ea rebum. Stet clita kasd gubergren, no sea takimata sanctus est Lorem ipsum dolor sit amet.</p>
+            </div>
+            <div class="sidebar-pane" id="profile">
+                <h1 class="sidebar-header">Research Group<span class="sidebar-close"><i class="fa fa-caret-left"></i></span></h1>
+                <p>Zhou Zhang, UW-Madison, zzhang347@wisc.edu; </p>
+                <p>Yuchi Ma, UW-Madison, ma286@wisc.edu; </p>
+                <p>Zeyu Cao, UW-Madison, zcao96@wisc.edu; </p>
+                <p>Zhengwei Yang, REE-NASS, zhengwei.yang@usda.gov </p>
+                <p>Qunying Huang, UW-Madison, qhuang46@wisc.edu;</p>
+                <p>Meiliu Wu, UW-Madison, mwu233@wisc.edu; </p>
+            </div>
+            <div class="sidebar-pane" id="messages">
+                <h1 class="sidebar-header">Contact<span class="sidebar-close"><i class="fa fa-caret-left"></i></span></h1>
+            </div>
+            <div class="sidebar-pane" id="database">
+                <h1 class="sidebar-header">Layers<span class="sidebar-close"><i class="fa fa-caret-left"></i></span></h1>
+            </div>
+            <div class="sidebar-pane" id="edit">
+                <h1 class="sidebar-header">Editing<span class="sidebar-close"><i class="fa fa-caret-left"></i></span></h1>
+            </div>
+            <div class="sidebar-pane" id="download">
+                <h1 class="sidebar-header">Download Data<span class="sidebar-close"><i class="fa fa-caret-left"></i></span></h1>
+            </div>
+            <div class="sidebar-pane" id="save">
+                <h1 class="sidebar-header">Save Map<span class="sidebar-close"><i class="fa fa-caret-left"></i></span></h1>
+            </div>
+            <div class="sidebar-pane" id="settings">
+                <h1 class="sidebar-header">Settings<span class="sidebar-close"><i class="fa fa-caret-left"></i></span></h1>
+            </div>
+        </div>
+    </div>
+
+    <div id="bar" class="topnav">
+        <a class="active" href="#home">&nbsp&nbsp&nbsp&nbspCrop Yield Prediction Project&nbsp&nbsp&nbsp</a>
+        <a href="#about">About</a>
+        <a href="#help">Help</a>
+        <a href="#publications">Publications</a>
+        <a href="#documentation">Documentation</a>
+    </div>
+    <div id="map"></div>
+
+    <script src="https://unpkg.com/leaflet@1.6.0/dist/leaflet.js" integrity="sha512-gZwIG9x3wUXg2hdXF6+rVkLF/0Vi9U8D2Ntg4Ga5I5BZpVkVxlJWbSQtXPSiUTtC0TjtGOmxa1AJPuV0CPthew==" crossorigin=""></script>
+    <script type="text/javascript" src="lib/jquery-3.3.1.js"></script>
+    <script src="https://code.jquery.com/jquery-1.12.4.js"></script>
+    <script src="https://code.jquery.com/ui/1.12.1/jquery-ui.js"></script>
+    <script type="text/javascript" src="lib/leaflet/leaflet-src.js"></script>
+    <script type="text/javascript" src="lib/leaflet-control-bar.js"></script>
+    <script type="text/javascript" src="lib/leaflet-sidebar.js"></script>
+    <script type="text/javascript" src="js/main.js"></script>
+</body>
+</html>
