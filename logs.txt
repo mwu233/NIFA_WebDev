@@ -1,2 +1,8 @@
 
-1. 
+Functions:
+
+1. location zoom in:
+
+	a. get the names of all features from the current layer;
+	b. assign these names to the global variable "locations";
+	c. after clicking "apply setting", zoom in to the feature with the specified name; 
