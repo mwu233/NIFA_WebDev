@@ -576,3 +576,23 @@ function applySetting() {
 }
 
 $(document).ready(createMap);
+
+/////////test
+function filter(node) {
+    if (node.classList) return ( !node.classList.contains("leaflet-top") && !node.classList.contains("leaflet-left") );
+    return true;
+}
+
+
+
+function myF(){
+    var testDiv = document.getElementById("testdiv");
+    domtoimage
+        .toJpeg(document.getElementById('map'), { filter:filter })
+        .then(function (dataUrl) {
+            var link = document.createElement('a');
+            link.download = 'map-download.jpeg';
+            link.href = dataUrl;
+            link.click();
+        });
+}
