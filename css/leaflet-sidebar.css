@@ -106,6 +106,7 @@
     display: block; }
 .sidebar-pane p {
     padding: 5px;
+    margin: 5px;
 }
 @media (min-width: 768px) and (max-width: 991px) {
     .sidebar-pane {

@@ -26,7 +26,7 @@
                 <li><a href="#save" role="tab"><i class="fa fa-save fa-2x"></i></a></li>
                 <li><a href="#profile" role="tab"><i class="fa fa-user fa-2x"></i></a></li>
                 <li><a href="#messages" role="tab"><i class="fa fa-envelope fa-2x"></i></a></li>
-                <li><a href="https://github.com/mwu233" role="tab" target="_blank"><i class="fa fa-github fa-2x"></i></a></li>
+                <li><a href="https://github.com/mwu233/NIFA_WebDev" role="tab" target="_blank"><i class="fa fa-github fa-2x"></i></a></li>
             </ul>
 
             <ul role="tablist">
@@ -41,14 +41,31 @@
                     Project Introduction
                     <span class="sidebar-close"><i class="fa fa-caret-left"></i></span>
                 </h1>
-                <p>References: <a href="https://www.sciencedirect.com/science/article/abs/pii/S0034425721001267">Corn yield prediction and uncertainty analysis based on remotely sensed variables using a Bayesian neural network approach</a>.</p>
-                <p class="lorem">Lorem ipsum dolor sit amet, consetetur sadipscing elitr, sed diam nonumy eirmod tempor invidunt ut labore et dolore magna aliquyam erat, sed diam voluptua. At vero eos et accusam et justo duo dolores et ea rebum. Stet clita kasd gubergren, no sea takimata sanctus est Lorem ipsum dolor sit amet. Lorem ipsum dolor sit amet, consetetur sadipscing elitr, sed diam nonumy eirmod tempor invidunt ut labore et dolore magna aliquyam erat, sed diam voluptua. At vero eos et accusam et justo duo dolores et ea rebum. Stet clita kasd gubergren, no sea takimata sanctus est Lorem ipsum dolor sit amet.</p>
-                <p class="lorem">Lorem ipsum dolor sit amet, consetetur sadipscing elitr, sed diam nonumy eirmod tempor invidunt ut labore et dolore magna aliquyam erat, sed diam voluptua. At vero eos et accusam et justo duo dolores et ea rebum. Stet clita kasd gubergren, no sea takimata sanctus est Lorem ipsum dolor sit amet. Lorem ipsum dolor sit amet, consetetur sadipscing elitr, sed diam nonumy eirmod tempor invidunt ut labore et dolore magna aliquyam erat, sed diam voluptua. At vero eos et accusam et justo duo dolores et ea rebum. Stet clita kasd gubergren, no sea takimata sanctus est Lorem ipsum dolor sit amet.</p>
+                <p>References: <a href="https://www.sciencedirect.com/science/article/abs/pii/S0034425721001267" role="tab" target="_blank">Corn yield prediction and uncertainty analysis based on remotely sensed variables using a Bayesian neural network approach</a>.</p>
+                <p>In this project, we have developed models and tools to provide near real-time in-season crop yield predictions for two mainly commodity crops (i.e., corn and soybeans) at the county-level for the CONUS, based on state-of-the-art remote sensing and deep learning technologies. </p>
+                <p>The predicted yield information will be disseminated through a web-based cyber-platform for free public use, which is critical for a variety of stakeholders, such as for US producers to make operational decisions; for insurance companies to help with claim and compliance assessment; for agricultural finance companies to support businesses of distribution, processing, and marketing. </p>
+                <p>The predicted yield information will also be delivered to USDA for decision support to maintain the stability of the food supply and price, to reduce food security threats. The proposed tool could potentially reduce the USDA NASS survey response burden and cost, improve the efficiency and data quality, and enhance USDA NASS crop yield prediction capability. </p>
+                <p>Therefore, the proposed project will add value to NASS's existing crop yield estimation program and have broad impacts on many stakeholders.</p>
             </div>
             <div class="sidebar-pane" id="info">
                 <h1 class="sidebar-header">Map Information<span class="sidebar-close"><i class="fa fa-caret-left"></i></span></h1>
-                <p class="lorem">Lorem ipsum dolor sit amet, consetetur sadipscing elitr, sed diam nonumy eirmod tempor invidunt ut labore et dolore magna aliquyam erat, sed diam voluptua. At vero eos et accusam et justo duo dolores et ea rebum. Stet clita kasd gubergren, no sea takimata sanctus est Lorem ipsum dolor sit amet. Lorem ipsum dolor sit amet, consetetur sadipscing elitr, sed diam nonumy eirmod tempor invidunt ut labore et dolore magna aliquyam erat, sed diam voluptua. At vero eos et accusam et justo duo dolores et ea rebum. Stet clita kasd gubergren, no sea takimata sanctus est Lorem ipsum dolor sit amet.</p>
-                <p class="lorem">Lorem ipsum dolor sit amet, consetetur sadipscing elitr, sed diam nonumy eirmod tempor invidunt ut labore et dolore magna aliquyam erat, sed diam voluptua. At vero eos et accusam et justo duo dolores et ea rebum. Stet clita kasd gubergren, no sea takimata sanctus est Lorem ipsum dolor sit amet. Lorem ipsum dolor sit amet, consetetur sadipscing elitr, sed diam nonumy eirmod tempor invidunt ut labore et dolore magna aliquyam erat, sed diam voluptua. At vero eos et accusam et justo duo dolores et ea rebum. Stet clita kasd gubergren, no sea takimata sanctus est Lorem ipsum dolor sit amet.</p>
+                <p>This web portal is based on the libraries of Leaflet and D3 in Javascript for users to interact with our prediction results. Currently, the web map portal supports the following main functions:
+                    <ul class="lorem"><!--<ul class="lorem">-->
+                        <li>Presenting the general information of NIFA Corn Yield Prediction Project at the menu, e.g., introduction, publications, documentation, profiles of the research group, and the web map user guideline;</li>
+                        <li>Displaying the studied areas by census tract, with crop yield prediction results rendered as a choropleth map, along with web map interaction basics such as zooming in/out;</li>
+                        <li>Hovering on a census tract of interest, and its information of crop type, yield, and prediction value, date and error will be displayed in a panel at the top-right corner, along with a scatter-plot displaying the temporal changes;</li>
+                        <li>Selecting a location, crop type, year, prediction date, and an attribute (i.e., crop yield value, prediction value, and prediction error), and the filtered information will be displayed on the map;</li>
+                        <li>Linking to the web map Github portal for any further information.</li>
+                    </ul>
+                </p>
+                <p>Other functions will also be developed in the next steps (but not limited to):
+                    <ul class="lorem">
+                        <li>Editing the map, e.g., adding features (point/line/polygon) and annotation to the map;</li>
+                        <li>Saving the map with the selected information by the user;</li>
+                        <li>Downloading the open-sourced map data selected by the user;</li>
+                        <li>Contacting the technician for help.</li>
+                    </ul>
+                </p>
             </div>
             <div class="sidebar-pane" id="profile">
                 <h1 class="sidebar-header">Research Group<span class="sidebar-close"><i class="fa fa-caret-left"></i></span></h1>
