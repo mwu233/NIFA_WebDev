@@ -1,2 +1,1 @@
-# NIFA_WebDev
-NIFA Web Map Project site: https://mwu233.github.io/NIFA_WebDev/index.html
+The website is live at https://mwu233.github.io/NIFA_WebDev/
