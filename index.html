@@ -146,8 +146,50 @@
                 </div>
 
             </div>
-            <div class="sidebar-pane" id="edit">
+            <div class="sidebar-pane" id="Plot and Save">
                 <h1 class="sidebar-header">Edit<span class="sidebar-close"><i class="fa fa-caret-left"></i></span></h1>
+
+                <!--Location selection-->
+                <div id="plotCounty">
+                    <h3 style="margin-bottom:0px;margin-top: 25px;margin-left: 0px;">
+                        Location:
+                    </h3>
+                    <!--Make sure the form has the autocomplete function switched off:-->
+                    <form autocomplete="off" action="/action_page.php">
+                        <div class="autocomplete" style="width:300px;">
+                            <input id="plotCountyIn" type="text" name="location" placeholder="Enter a county">
+                        </div>
+                    </form>
+                </div>
+
+                <div id="plotState">
+                    <h3 style="margin-bottom:0px;margin-top: 25px;margin-left: 0px;">
+                        State:
+                    </h3>
+                        <div class="selector" style="width:300px;">
+                            <select id="plotStateIn"  style="width:150px;"></select>
+                        </div>
+                </div>
+
+
+                <div id="plotCrop">
+                    <h3 style="margin-bottom:0px;margin-top: 25px;margin-left: 0px;">
+                        Crop type:
+                    </h3>
+                    <label for="plotCropIn"></label>
+                    <select name="plotCropIn" id="plotCropIn" style="font-size: 16px; padding: 3px">
+                        <option value="corn">Corn</option>
+                        <option value="soybean">Soybean</option>
+                    </select>
+                </div>
+
+                <div>
+                    <button class="btn" style="background:#3630a3;color:white;" onclick="plotFunc()">
+                    Plot yearly data</button>
+                    <button class="btn" style="background:#3630a3;color:white;" onclick="downloadFunc('scatterP')">
+                        Download Plot</button>
+                </div>
+                <div id="scatterP"></div>
             </div>
             <div class="sidebar-pane" id="download">
                 <h1 class="sidebar-header">Download Data<span class="sidebar-close"><i class="fa fa-caret-left"></i></span></h1>
@@ -156,7 +198,7 @@
             </div>
             <div class="sidebar-pane" id="save">
                 <h1 class="sidebar-header">Save Map<span class="sidebar-close"><i class="fa fa-caret-left"></i></span></h1>
-                <button class="btn" style="background:#3630a3;color:white;" onclick="myF()">
+                <button class="btn" style="background:#3630a3;color:white;" onclick="downloadF('map')">
                     Download Current Map View</button>
                 <div id="testdiv"></div>
             </div>
@@ -184,5 +226,6 @@
     <script type="text/javascript" src="lib/leaflet-sidebar.js"></script>
     <script type="text/javascript" src="lib/d3.v4.js"></script>
     <script type="text/javascript" src="js/main.js"></script>
+    <script src="lib/dom-to-image-more.min.js">         </script>
 </body>
 </html>
