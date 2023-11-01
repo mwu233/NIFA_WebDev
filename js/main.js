@@ -27,10 +27,10 @@ var curDate = {
 }
 
 //function to instantiate the Leaflet map
-function createMap(){
+function createMap() {
     //create the map
     var map = L.map('map', {
-        center: [43,-93],
+        center: [43, -93],
         zoom: 5.5,
         zoomControl: false
     });
@@ -52,20 +52,68 @@ function createMap(){
     //call getData function
     getData(curMap, curCrop, curYear, curMonth, curLocation);
 
+    // leaflet draw control 
+
+    var drawnFeatures = new L.FeatureGroup();
+    map.addLayer(drawnFeatures);
+
+    var drawControl = new L.Control.Draw({
+        edit: { 
+            featureGroup: drawnFeatures },
+        position: 'bottomright',
+        draw: {
+		    polygon: {
+		     shapeOptions: {
+		      color: 'purple'
+		     },
+		    //  allowIntersection: false,
+		    //  drawError: {
+		    //   color: 'orange',
+		    //   timeout: 1000
+		    //  },
+		    },
+		    polyline: {
+		     shapeOptions: {
+		      color: 'red'
+		     },
+		    },
+		    rect: {
+		     shapeOptions: {
+		      color: 'green'
+		     },
+		    },
+		    circle: {
+		     shapeOptions: {
+		      color: 'steelblue'
+		     },
+		    },
+		   },
+    });
+    map.addControl(drawControl);
+    console.log("drawControl");
+
+
+    map.on('draw:created', function (e) {
+        var type = e.layerType;
+        var layer = e.layer;
+        console.log(e);
+        drawnFeatures.addLayer(layer);
+    });
+
 };
 
 //function to retrieve the data and place it on the map
-function getData(map, crop, year, month, location){
+function getData(map, crop, year, month, location) {
     //load the data
     var jsonPath = "data/" + crop + "/" + year + "/" + month + ".json";
 
     // $.ajax("data/crop_2020.json", {
     $.ajax(jsonPath, {
         dataType: "json",
-        success: function(response){
+        success: function (response) {
             // create an attributes array
             var attributes = processData(response);
-                console.log(response)
+            console.log(response)
             // update global variables curAttrs and curResponse
             curAttrs = attributes;
             curResponse = response;
@@ -87,7 +135,7 @@ function getData(map, crop, year, month, location){
                     }
                 });
             } else {
-                map.setView({lat:43, lng:-93}, 5.5)
+                map.setView({ lat: 43, lng: -93 }, 5.5)
             }
 
             // create control
@@ -109,7 +157,7 @@ function getData(map, crop, year, month, location){
 
 };
 
-function processData(data){
+function processData(data) {
     //empty array to hold attributes
     //var attrs = [];
 
@@ -129,9 +177,9 @@ function processData(data){
     return properties;
 };
 
-function createChoropleth(data, map, attrs, idx){
+function createChoropleth(data, map, attrs, idx) {
     // remove current layer if exists
-    if (curLayer){
+    if (curLayer) {
         map.removeLayer(curLayer);
     };
 
@@ -158,32 +206,32 @@ function createChoropleth(data, map, attrs, idx){
 function getColor(d) {
 
     if (curProperty === "error") {
-    // "#009392",
-    // "#39b185",
-    // "#9ccb86",
-    //         "#e9e29c",
-    //         "#eeb479",
-    //         "#e88471",
-    //         "#cf597e";
+        // "#009392",
+        // "#39b185",
+        // "#9ccb86",
+        //         "#e9e29c",
+        //         "#eeb479",
+        //         "#e88471",
+        //         "#cf597e";
         return d < -2 ? "#009392" :
             d < -1 ? "#39b185" :
-                d < 1 ? "#e9e29c":
-                    d < 2 ? "#e88471":
+                d < 1 ? "#e9e29c" :
+                    d < 2 ? "#e88471" :
                         "#cf597e";
     }
     else {
         if (curCrop === "corn") {
             return d > 190 ? '#800026' :
-                d > 160  ? '#BD0026' :
-                    d > 130  ? '#FC4E2A' :
-                        d > 100   ? '#FEB24C' :
+                d > 160 ? '#BD0026' :
+                    d > 130 ? '#FC4E2A' :
+                        d > 100 ? '#FEB24C' :
                             '#FFEDA0';
         }
         else { // soybean
             return d > 60 ? '#800026' :
-                d > 55  ? '#BD0026' :
-                    d > 50  ? '#FC4E2A' :
-                        d > 45   ? '#FEB24C' :
+                d > 55 ? '#BD0026' :
+                    d > 50 ? '#FC4E2A' :
+                        d > 45 ? '#FEB24C' :
                             '#FFEDA0';
         }
     }
@@ -216,19 +264,18 @@ function highlightFeature(e) {
     layer.bringToFront();
 
     var content = '<h4>Crop Yield Information</h4>' +
-                '<b>' + layer.feature.properties.NAMELSAD + '</b><br />' +
-                'Crop type: ' + curCrop + '<br />' +
-                'Date: ' + curDate[curMonth] + "/" + curYear + '<br />' +
-                'Yield: ' + Number(layer.feature.properties.yield).toFixed(2) + ' unit / mi<sup>2</sup><br />' +
-                'Prediction: ' + Number(layer.feature.properties.pred).toFixed(2) + ' unit / mi<sup>2</sup><br />' +
-                'Error: ' + Number(layer.feature.properties.error).toFixed(2) + ' unit / mi<sup>2</sup>';
+        '<b>' + layer.feature.properties.NAMELSAD + '</b><br />' +
+        'Crop type: ' + curCrop + '<br />' +
+        'Date: ' + curDate[curMonth] + "/" + curYear + '<br />' +
+        'Yield: ' + Number(layer.feature.properties.yield).toFixed(2) + ' unit / mi<sup>2</sup><br />' +
+        'Prediction: ' + Number(layer.feature.properties.pred).toFixed(2) + ' unit / mi<sup>2</sup><br />' +
+        'Error: ' + Number(layer.feature.properties.error).toFixed(2) + ' unit / mi<sup>2</sup>';
     updateHoverControl(content);
 
     // update a graph
-    var cornYield = d3.csv("data/corn_yield_US.csv", function(data) {
-        var county = data.filter(function(row) {
-            if (Number(row["FIPS"]) === layer.feature.properties.FIPS)
-            {
+    var cornYield = d3.csv("data/corn_yield_US.csv", function (data) {
+        var county = data.filter(function (row) {
+            if (Number(row["FIPS"]) === layer.feature.properties.FIPS) {
                 return row;
             }
         });
@@ -249,11 +296,11 @@ function highlightFeature(e) {
 
         // set the dimensions and margins of the graph
         var margin = {
-                top: 10,
-                right: 50,
-                bottom: 10,
-                left: 50
-            },
+            top: 10,
+            right: 50,
+            bottom: 10,
+            left: 50
+        },
             width = 325 - margin.left - margin.right,
             height = 220 - margin.top - margin.bottom;
 
@@ -281,7 +328,7 @@ function highlightFeature(e) {
         // text label for the x axis
         svg.append("text")
             .attr("transform",
-                "translate(" + (width/2) + " ," +
+                "translate(" + (width / 2) + " ," +
                 (height + margin.top + 25) + ")")
             .attr("fill", "black")
             .style("text-anchor", "middle")
@@ -301,7 +348,7 @@ function highlightFeature(e) {
         svg.append("text")
             .attr("transform", "rotate(-90)")
             .attr("y", margin.left - 95)
-            .attr("x",0 - (height / 2))
+            .attr("x", 0 - (height / 2))
             .attr("dy", "1em")
             .attr("fill", "black")
             .style("text-anchor", "middle")
@@ -331,8 +378,8 @@ function highlightFeature(e) {
             .data(county)
             .enter()
             .append("circle")
-            .attr("cx", function (d) { return x(d.year); } )
-            .attr("cy", function (d) { return y(d.yield); } )
+            .attr("cx", function (d) { return x(d.year); })
+            .attr("cy", function (d) { return y(d.yield); })
             .attr("r", 4)
             .style("fill", "#69b3a2")
     });
@@ -359,7 +406,7 @@ function onEachFeature(feature, layer) {
 var curInfo;
 var curLegend;
 
-function createHoverControl(response, map, attrs){
+function createHoverControl(response, map, attrs) {
     var info = L.control();
 
     info.onAdd = function (map) {
@@ -378,12 +425,12 @@ function createHoverControl(response, map, attrs){
     updateHoverControl(content);
 }
 
-function updateHoverControl(content){
+function updateHoverControl(content) {
     $('#temporal-info').html(content);
 }
 
-function createLegend(map){
-    var legend = L.control({position: 'bottomright'});
+function createLegend(map) {
+    var legend = L.control({ position: 'bottomright' });
 
     legend.onAdd = function (map) {
 
@@ -437,10 +484,10 @@ function createSideMenu(map) {
     var sidebar = L.control.sidebar('sidebar').addTo(map);
 }
 
-function createMenu(map){
-    var controlBar = L.control.bar('bar',{
-        position:'topcenter',
-        visible:true
+function createMenu(map) {
+    var controlBar = L.control.bar('bar', {
+        position: 'topcenter',
+        visible: true
     });
     map.addControl(controlBar);
 }
@@ -454,7 +501,7 @@ function autocomplete(inp, arr) {
     the text field element and an array of possible autocompleted values:*/
     var currentFocus;
     /*execute a function when someone writes in the text field:*/
-    inp.addEventListener("input", function(e) {
+    inp.addEventListener("input", function (e) {
         var a, b, i, val = this.value;
         /*close any already open lists of autocompleted values*/
         closeAllLists();
@@ -480,7 +527,7 @@ function autocomplete(inp, arr) {
                 /*insert a input field that will hold the current array item's value:*/
                 b.innerHTML += "<input type='hidden' value='" + arr[i] + "'>";
                 /*execute a function when someone clicks on the item value (DIV element):*/
-                b.addEventListener("click", function(e) {
+                b.addEventListener("click", function (e) {
                     /*insert the value for the autocomplete text field:*/
                     inp.value = this.getElementsByTagName("input")[0].value;
                     $(inp).trigger("input")
@@ -493,7 +540,7 @@ function autocomplete(inp, arr) {
         }
     });
     /*execute a function presses a key on the keyboard:*/
-    inp.addEventListener("keydown", function(e) {
+    inp.addEventListener("keydown", function (e) {
         var x = document.getElementById(this.id + "autocomplete-list");
         if (x) x = x.getElementsByTagName("div");
         if (e.keyCode == 40) {
@@ -547,7 +594,7 @@ function autocomplete(inp, arr) {
         }
     }
     /*execute a function when someone clicks in the document:*/
-    document.addEventListener("click", function(e) {
+    document.addEventListener("click", function (e) {
         closeAllLists(e.target);
     });
 }
@@ -583,16 +630,16 @@ $(document).ready(createMap);
 
 //Map download functions :
 function filter(node) {
-    if (node.classList) return ( !node.classList.contains("leaflet-top") && !node.classList.contains("leaflet-left") );
+    if (node.classList) return (!node.classList.contains("leaflet-top") && !node.classList.contains("leaflet-left"));
     return true;
 }
 
 
 
-function downloadFunc(divID){
+function downloadFunc(divID) {
     // var testDiv = document.getElementById("testdiv");
     domtoimage
-        .toJpeg(document.getElementById(divID), { filter:filter })
+        .toJpeg(document.getElementById(divID), { filter: filter })
         .then(function (dataUrl) {
             var link = document.createElement('a');
             link.download = 'download.jpeg';
@@ -604,21 +651,21 @@ function downloadFunc(divID){
 
 
 // FIPS of States as dictionary
-const stateFIPS = {'01': 'ALABAMA', '02': 'ALASKA', '04': 'ARIZONA', '05': 'ARKANSAS', '06': 'CALIFORNIA', '08': 'COLORADO', '09': 'CONNECTICUT', '10': 'DELAWARE', '11': 'DISTRICT OF COLUMBIA', '12': 'FLORIDA', '13': 'GEORGIA', '15': 'HAWAII', '16': 'IDAHO', '17': 'ILLINOIS', '18': 'INDIANA', '19': 'IOWA', '20': 'KANSAS', '21': 'KENTUCKY', '22': 'LOUISIANA', '23': 'MAINE', '24': 'MARYLAND', '25': 'MASSACHUSETTS', '26': 'MICHIGAN', '27': 'MINNESOTA', '28': 'MISSISSIPPI', '29': 'MISSOURI', '30': 'MONTANA', '31': 'NEBRASKA', '32': 'NEVADA', '33': 'NEW HAMPSHIRE', '34': 'NEW JERSEY', '35': 'NEW MEXICO', '36': 'NEW YORK', '37': 'NORTH CAROLINA', '38': 'NORTH DAKOTA', '39': 'OHIO', '40': 'OKLAHOMA', '41': 'OREGON', '42': 'PENNSYLVANIA', '44': 'RHODE ISLAND', '45': 'SOUTH CAROLINA', '46': 'SOUTH DAKOTA', '47': 'TENNESSEE', '48': 'TEXAS', '49': 'UTAH', '50': 'VERMONT', '51': 'VIRGINIA', '53': 'WASHINGTON', '54': 'WEST VIRGINIA', '55': 'WISCONSIN', '56': 'WYOMING'}
+const stateFIPS = { '01': 'ALABAMA', '02': 'ALASKA', '04': 'ARIZONA', '05': 'ARKANSAS', '06': 'CALIFORNIA', '08': 'COLORADO', '09': 'CONNECTICUT', '10': 'DELAWARE', '11': 'DISTRICT OF COLUMBIA', '12': 'FLORIDA', '13': 'GEORGIA', '15': 'HAWAII', '16': 'IDAHO', '17': 'ILLINOIS', '18': 'INDIANA', '19': 'IOWA', '20': 'KANSAS', '21': 'KENTUCKY', '22': 'LOUISIANA', '23': 'MAINE', '24': 'MARYLAND', '25': 'MASSACHUSETTS', '26': 'MICHIGAN', '27': 'MINNESOTA', '28': 'MISSISSIPPI', '29': 'MISSOURI', '30': 'MONTANA', '31': 'NEBRASKA', '32': 'NEVADA', '33': 'NEW HAMPSHIRE', '34': 'NEW JERSEY', '35': 'NEW MEXICO', '36': 'NEW YORK', '37': 'NORTH CAROLINA', '38': 'NORTH DAKOTA', '39': 'OHIO', '40': 'OKLAHOMA', '41': 'OREGON', '42': 'PENNSYLVANIA', '44': 'RHODE ISLAND', '45': 'SOUTH CAROLINA', '46': 'SOUTH DAKOTA', '47': 'TENNESSEE', '48': 'TEXAS', '49': 'UTAH', '50': 'VERMONT', '51': 'VIRGINIA', '53': 'WASHINGTON', '54': 'WEST VIRGINIA', '55': 'WISCONSIN', '56': 'WYOMING' }
 let countyData;
-d3.csv("data/county.csv",function (data) {
-    countyData=data;
+d3.csv("data/county.csv", function (data) {
+    countyData = data;
 })
 
-$(document).ready(function (){
-    $("#plotCountyIn").on("input",function (){
+$(document).ready(function () {
+    $("#plotCountyIn").on("input", function () {
 
         let inName = this.value
 
-        let options=''
-        countyData.forEach(d=>{
-            if (inName===d.NAMELSAD){
-                options += '<option value="'+String(d.STATEFP)+'">'+stateFIPS[d.STATEFP]+'</option>'
+        let options = ''
+        countyData.forEach(d => {
+            if (inName === d.NAMELSAD) {
+                options += '<option value="' + String(d.STATEFP) + '">' + stateFIPS[d.STATEFP] + '</option>'
             }
         })
 
@@ -627,18 +674,18 @@ $(document).ready(function (){
     })
 })
 
-function plotFunc(){
+function plotFunc() {
 
     var thisFIPS;
-    var d = d3.csv("data/county.csv", function (data){
+    var d = d3.csv("data/county.csv", function (data) {
         thisFIPS = data.filter(function (row) {
-            if (Number(row["STATEFP"]) === Number($("#plotStateIn").val()) && row["NAMELSAD"]===$("#plotCountyIn").val() ) {
+            if (Number(row["STATEFP"]) === Number($("#plotStateIn").val()) && row["NAMELSAD"] === $("#plotCountyIn").val()) {
 
-                scatterGen("scatterP",Number(row.GEOID))
+                scatterGen("scatterP", Number(row.GEOID))
                 return row.GEOID;
             }
-    })
-    return thisFIPS
+        })
+        return thisFIPS
     })
 
 }
@@ -651,8 +698,8 @@ function plotFunc(){
  * @param plotDivID the DIV element ID (e.g., "scatterP") that plot append to. It will clear previous plots upon calling
  * @param fispIn FIPS code (as number) of the county
  */
-function scatterGen(plotDivID,fipsIn){
-    var cornYield = d3.csv("data/corn_yield_US.csv", function(data) {
+function scatterGen(plotDivID, fipsIn) {
+    var cornYield = d3.csv("data/corn_yield_US.csv", function (data) {
         var county = data.filter(function (row) {
             if (Number(row["FIPS"]) === fipsIn) {
                 return row;
@@ -675,17 +722,17 @@ function scatterGen(plotDivID,fipsIn){
 
         // set the dimensions and margins of the graph
         var margin = {
-                top: 10,
-                right: 50,
-                bottom: 10,
-                left: 50
-            },
+            top: 10,
+            right: 50,
+            bottom: 10,
+            left: 50
+        },
             width = 325 - margin.left - margin.right,
             height = 220 - margin.top - margin.bottom;
 
         document.getElementById(plotDivID).innerHTML = "";
         // append the svg object to the body of the page
-        var svg = d3.select("#"+plotDivID)
+        var svg = d3.select("#" + plotDivID)
             .append("svg")
             .attr("preserveAspectRatio", "xMinYMin meet")
             .attr("viewBox", "0 0 350 250")
