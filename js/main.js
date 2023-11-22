@@ -601,6 +601,54 @@ function downloadFunc(divID){
         });
 }
 
+function downloadData(){
+    switch( document.getElementById("dataDownFormat").value ){
+        case 'csv':
+            let t = curResponse.features.map(d=>
+                d={NAME:d.properties.NAME,
+                    FIPS:d.properties.FIPS,
+                    YIELD:d.properties.yield,
+                    PREDICTION:d.properties.pred,
+                    ERROR:d.properties.error})
+            let csvRows = [];
+            const headers = Object.keys(t[0]);
+            csvRows.push(headers.join(','));
+            for (const row of t) {
+                const values = headers.map(e => {
+                    return row[e]
+                })
+                csvRows.push(values.join(','))
+            }
+            csvRows = csvRows.join('\n')
+
+            blob = new Blob([csvRows], { type: 'text/csv' });
+            url = window.URL.createObjectURL(blob)
+            var link = document.createElement("a");
+            link.setAttribute("href", url);
+            link.setAttribute("download", "my_data.csv");
+            document.body.appendChild(link); // Required for FF
+
+            link.click();
+            link.remove();
+            break;
+
+        case 'json':
+            var link = document.createElement("a");
+            // If you don't know the name or want to use
+            // the webserver default set name = ''
+            link.setAttribute('download', name);
+            link.href = "data/corn/2021/1.json";
+            link.download = "crop_year_date"
+            document.body.appendChild(link);
+            link.click();
+            link.remove();
+            break;
+        case 'shp':
+        // shpwrite.download(curResponse)
+        default:
+
+    }
+}
 
 
 // FIPS of States as dictionary
@@ -672,6 +720,15 @@ function scatterGen(plotDivID,fipsIn){
         var xmin = Math.min.apply(Math, county.map(function (o) {
             return o.year;
         }))
+
+        const statDiv = document.getElementById("statistics")
+        let yieldMean = (county.reduce((a,b)=>a.yield+b.yield,0)/county.length)||0
+
+        yieldMean = county.reduce(function(p,c,i){return p+(c.yield-p)/(i+1)},0).toFixed(2);
+
+        statDiv.innerText = "Maximum yield: "+ymax.toFixed(2).toString()+"\r\n"+
+            "Minimum yield: "+ymin.toFixed(2).toString()+"\r\n"+
+            "Average yearly yield: "+yieldMean+""
 
         // set the dimensions and margins of the graph
         var margin = {
