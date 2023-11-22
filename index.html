@@ -162,6 +162,15 @@
                     <button class="btn apply" onclick="applySetting()" style="margin-left: 15px;">Apply Selections</button>
                 </div>
 
+                <select name="dataDownFormat" id="dataDownFormat" style="font-size: 16px; padding: 3px;margin-top: 10px">
+                    <option value="csv">CSV File</option>
+                    <option value="shp">ShapeFile</option>
+                    <option value="json">GeoJSON File</option>
+                </select>
+                <div id="DataDownButton" style="margin-top: 15px;">
+                    <button class="btn apply" onclick="downloadData()" style="margin-left: 15px;">Download Selections</button>
+                </div>
+
             </div>
             <div class="sidebar-pane" id="edit">
                 <h1 class="sidebar-header">Edit<span class="sidebar-close"><i class="fa fa-caret-left"></i></span></h1>
@@ -200,7 +209,12 @@
                     </select>
                 </div>
 
-                <div>
+                </div>
+                <div id="statistics" style="margin-bottom:0px;margin-top: 25px;margin-left: 0px;">
+                </div>
+
+
+            <div>
                     <button class="btn" style="background:#3630a3;color:white;" onclick="plotFunc()">
                     Plot yearly data</button>
                     <button class="btn" style="background:#3630a3;color:white;" onclick="downloadFunc('scatterP')">
