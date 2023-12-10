@@ -208,20 +208,20 @@
                         <option value="soybean">Soybean</option>
                     </select>
                 </div>
-
-                </div>
-                <div id="statistics" style="margin-bottom:0px;margin-top: 25px;margin-left: 0px;">
-                </div>
+                <div id="statistics" style="margin-bottom:0px;margin-top: 25px;margin-left: 0px;"></div>
 
 
-            <div>
+                <div>
                     <button class="btn" style="background:#3630a3;color:white;" onclick="plotFunc()">
-                    Plot yearly data</button>
+                        Plot yearly data</button>
                     <button class="btn" style="background:#3630a3;color:white;" onclick="downloadFunc('scatterP')">
                         Download Plot</button>
                 </div>
                 <div id="scatterP"></div>
-            </div>
+
+                </div>
+
+
             <div class="sidebar-pane" id="download">
                 <h1 class="sidebar-header">Download Data<span class="sidebar-close"><i class="fa fa-caret-left"></i></span></h1>
                 <p><a href="https://github.com/mwu233/NIFA_WebDev/tree/main/data" role="tab" target="_blank">Download Prediction Results</a></p>
@@ -229,7 +229,7 @@
             </div>
             <div class="sidebar-pane" id="save">
                 <h1 class="sidebar-header">Save Map<span class="sidebar-close"><i class="fa fa-caret-left"></i></span></h1>
-                <button class="btn" style="background:#3630a3;color:white;" onclick="downloadF('map')">
+                <button class="btn" style="background:#3630a3;color:white;" onclick="downloadFunc('map')">
                     Download Current Map View</button>
                 <div id="testdiv"></div>
             </div>

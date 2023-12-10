@@ -203,9 +203,10 @@ function style(feature) {
     };
 }
 
+let curMouserOverFIPS = null;
 function highlightFeature(e) {
     var layer = e.target;
-
+    curMouserOverFIPS = layer.feature.properties.FIPS;
     layer.setStyle({
         weight: 5,
         color: '#666',
@@ -258,83 +259,91 @@ function highlightFeature(e) {
             height = 220 - margin.top - margin.bottom;
 
         // append the svg object to the body of the page
-        var svg = d3.select("#temporal-info")
-            .append("svg")
-            .attr("preserveAspectRatio", "xMinYMin meet")
-            .attr("viewBox", "0 0 300 250")
-            .append("g")
-            .attr("transform",
-                "translate(" + margin.left + "," + margin.top + ")");
+        if(layer.feature.properties.FIPS===curMouserOverFIPS) {
+            d3.select("#temporal-info").selectAll("svg").remove();
+            const svg = d3.select("#temporal-info")
+                .append("svg")
+                .attr("preserveAspectRatio", "xMinYMin meet")
+                .attr("viewBox", "0 0 300 250")
+                .append("g")
+                .attr("transform",
+                    "translate(" + margin.left + "," + margin.top + ")");
 
-        // Add X axis --> it is a date format
-        var x = d3.scaleLinear()
-            .domain([xmin - 5, xmax + 5])
-            .range([0, width]);
+            // Add X axis --> it is a date format
+            var x = d3.scaleLinear()
+                .domain([xmin - 5, xmax + 5])
+                .range([0, width]);
 
-        svg.append("g")
-            .attr("transform", "translate(0," + height + ")")
-            .attr("class", "axisBlack")
-            .call(d3.axisBottom(x).tickSizeOuter(0))
-            .call(d3.axisBottom(x).tickValues(d3.range(xmin, xmax, 10)))
-        //     .selectAll("text").remove()
+            svg.append("g")
+                .attr("transform", "translate(0," + height + ")")
+                .attr("class", "axisBlack")
+                .call(d3.axisBottom(x).tickSizeOuter(0))
+                .call(d3.axisBottom(x).tickValues(d3.range(xmin, xmax, 10)))
+            //     .selectAll("text").remove()
 
-        // text label for the x axis
-        svg.append("text")
-            .attr("transform",
-                "translate(" + (width/2) + " ," +
-                (height + margin.top + 25) + ")")
-            .attr("fill", "black")
-            .style("text-anchor", "middle")
-            .style("font", "12px verdana")
-            .text("Year");
+            // text label for the x axis
+            svg.append("text")
+                .attr("transform",
+                    "translate(" + (width / 2) + " ," +
+                    (height + margin.top + 25) + ")")
+                .attr("fill", "black")
+                .style("text-anchor", "middle")
+                .style("font", "12px verdana")
+                .text("Year");
 
-        // Add Y axis
-        var y = d3.scaleLinear()
-            .domain([ymin - 10, ymax + 10])
-            .range([height, 0]);
+            // Add Y axis
+            var y = d3.scaleLinear()
+                .domain([ymin - 10, ymax + 10])
+                .range([height, 0]);
 
-        svg.append("g")
-            .attr("class", "axisBlack")
-            .call(d3.axisLeft(y).tickSizeOuter(0));
+            svg.append("g")
+                .attr("class", "axisBlack")
+                .call(d3.axisLeft(y).tickSizeOuter(0));
 
-        // text label for the y axis
-        svg.append("text")
-            .attr("transform", "rotate(-90)")
-            .attr("y", margin.left - 95)
-            .attr("x",0 - (height / 2))
-            .attr("dy", "1em")
-            .attr("fill", "black")
-            .style("text-anchor", "middle")
-            .style("font", "12px verdana")
-            .text("Corn Yield");
+            // text label for the y axis
+            svg.append("text")
+                .attr("transform", "rotate(-90)")
+                .attr("y", margin.left - 95)
+                .attr("x", 0 - (height / 2))
+                .attr("dy", "1em")
+                .attr("fill", "black")
+                .style("text-anchor", "middle")
+                .style("font", "12px verdana")
+                .text("Corn Yield");
 
-        //Add the line
-        // svg.append("path")
-        //     .datum(county)
-        //     .attr("fill", "none")
-        //     .attr("stroke", "black")
-        //     .attr("class", "axisBlack")
-        //     .attr("stroke-width", 1.25)
-        //     .attr("d", d3.line()
-        //         .curve(d3.curveBasis) // Just add that to have a curve instead of segments
-        //         .x(function (d) {
-        //             return x(d.year)
-        //         })
-        //         .y(function (d) {
-        //             return y(d.yield)
-        //         })
-        //     )
+            //Add the line
+            // svg.append("path")
+            //     .datum(county)
+            //     .attr("fill", "none")
+            //     .attr("stroke", "black")
+            //     .attr("class", "axisBlack")
+            //     .attr("stroke-width", 1.25)
+            //     .attr("d", d3.line()
+            //         .curve(d3.curveBasis) // Just add that to have a curve instead of segments
+            //         .x(function (d) {
+            //             return x(d.year)
+            //         })
+            //         .y(function (d) {
+            //             return y(d.yield)
+            //         })
+            //     )
 
-        // Add dots
-        svg.append('g')
-            .selectAll("dot")
-            .data(county)
-            .enter()
-            .append("circle")
-            .attr("cx", function (d) { return x(d.year); } )
-            .attr("cy", function (d) { return y(d.yield); } )
-            .attr("r", 4)
-            .style("fill", "#69b3a2")
+            // Add dots
+            svg.append('g')
+                .selectAll("dot")
+                .data(county)
+                .enter()
+                .append("circle")
+                .attr("cx", function (d) {
+                    return x(d.year);
+                })
+                .attr("cy", function (d) {
+                    return y(d.yield);
+                })
+                .attr("r", 4)
+                .style("fill", "#69b3a2")
+
+        }
     });
 }
 
@@ -810,5 +819,16 @@ function scatterGen(plotDivID,fipsIn){
             })
             .attr("r", 4)
             .style("fill", "#69b3a2")
+
+            .append("title")
+            .text(d=>d.year+": "+d.yield)
+
+        d3.selectAll("circle")
+            .on("mouseover",function (d){
+                d3.select(this).style("fill",'red').attr("r",6)
+            })
+            .on("mouseout",function (d){
+                d3.select(this).style("fill", "#69b3a2").attr('r',4)
+            })
     })
 }
