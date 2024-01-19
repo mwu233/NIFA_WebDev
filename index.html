@@ -10,6 +10,8 @@
 <!--    <link rel="stylesheet" href="css/leaflet-control-bar.css" />-->
     <link rel="stylesheet" href="css/leaflet-sidebar.css" />
     <link rel="stylesheet" href="css/style.css">
+    <!-- leaflet draw plugin -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet.draw/0.4.2/leaflet.draw.css"/>
 </head>
 <body>
 
@@ -177,7 +179,7 @@
 
                 <!--Location selection-->
                 <div id="plotCounty">
-                    <h3 style="margin-bottom:0px;margin-top: 25px;margin-left: 0px;">
+                    <h3 style="margin-bottom:0px;margin-top: 5px;margin-left: 0px;">
                         Location:
                     </h3>
                     <!--Make sure the form has the autocomplete function switched off:-->
@@ -189,7 +191,7 @@
                 </div>
 
                 <div id="plotState">
-                    <h3 style="margin-bottom:0px;margin-top: 25px;margin-left: 0px;">
+                    <h3 style="margin-bottom:0px;margin-top: 5px;margin-left: 0px;">
                         State:
                     </h3>
                         <div class="selector" style="width:300px;">
@@ -197,9 +199,8 @@
                         </div>
                 </div>
 
-
                 <div id="plotCrop">
-                    <h3 style="margin-bottom:0px;margin-top: 25px;margin-left: 0px;">
+                    <h3 style="margin-bottom:0px;margin-top: 5px;margin-left: 0px;">
                         Crop type:
                     </h3>
                     <label for="plotCropIn"></label>
@@ -208,17 +209,22 @@
                         <option value="soybean">Soybean</option>
                     </select>
                 </div>
-                <div id="statistics" style="margin-bottom:0px;margin-top: 25px;margin-left: 0px;"></div>
-
-
                 <div>
-                    <button class="btn" style="background:#3630a3;color:white;" onclick="plotFunc()">
-                        Plot yearly data</button>
-                    <button class="btn" style="background:#3630a3;color:white;" onclick="downloadFunc('scatterP')">
-                        Download Plot</button>
+                    <button class="btn" style="background:#42a76f;color:white;" onclick="plotFunc()">
+                        Plot</button>
+                    <button class="btn" style="background:#42a76f;color:white;" onclick="downloadFunc('report')">
+                        Download Report</button>
+<!--                    <button class="btn" style="background:#3630a3;color:white;" onclick="downloadPDFFunc('report')">-->
+<!--                        Download PDF</button>-->
                 </div>
-                <div id="scatterP"></div>
 
+                <div id="report" style="background: #ffffff">
+                    <h3 id="reportTitle" style="margin-bottom:0px;margin-top: 5px;margin-left: 0px;"></h3>
+                    <h4 id="reportSubTitle" style="margin-bottom:0px;margin-top: 5px;margin-left: 0px;">Statistics Summary:</h4>
+                    <div id="statistics" style="margin-bottom:5px;margin-top: 10px;margin-left: 0px;"></div>
+
+                    <div id="scatterP"></div>
+                </div>
                 </div>
 
 
@@ -258,6 +264,11 @@
     <script type="text/javascript" src="lib/leaflet-sidebar.js"></script>
     <script type="text/javascript" src="lib/d3.v4.js"></script>
     <script type="text/javascript" src="js/main.js"></script>
-    <script src="lib/dom-to-image-more.min.js">         </script>
+    <script src="lib/dom-to-image-more.min.js"></script>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/canvg/1.1/canvg.js"></script>
+    <script src="https://unpkg.com/jspdf@latest/dist/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet.draw/0.4.2/leaflet.draw.js"></script>
+    <script src="https://html2canvas.hertzen.com/dist/html2canvas.min.js"></script>
 </body>
 </html>

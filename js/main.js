@@ -52,7 +52,9 @@ function createMap(){
     //call getData function
     getData(curMap, curCrop, curYear, curMonth, curLocation);
 
-};
+
+
+}
 
 //function to retrieve the data and place it on the map
 function getData(map, crop, year, month, location){
@@ -189,7 +191,6 @@ function getColor(d) {
     }
 
 }
-
 
 function style(feature) {
     return {
@@ -355,6 +356,18 @@ function resetHighlight(e) {
 
 function zoomToFeature(e) {
     curMap.fitBounds(e.target.getBounds());
+    updateClicked(e);
+}
+
+function updateClicked(e){
+    curLocation = e.target.feature.properties.NAMELSAD;
+    document.getElementById("plotCountyIn")
+        .setAttribute('value',curLocation)
+    let tempfips = String(e.target.feature.properties.FIPS)
+    tempfips = tempfips.length===4?"0"+tempfips.slice(0):tempfips.slice(0,2)
+    let options = '<option value="'+tempfips+'">'+stateFIPS[tempfips]+'</option>'
+    $("#plotStateIn").html(options)
+    plotFunc()
 }
 
 function onEachFeature(feature, layer) {
@@ -597,7 +610,6 @@ function filter(node) {
 }
 
 
-
 function downloadFunc(divID){
     // var testDiv = document.getElementById("testdiv");
     domtoimage
@@ -608,6 +620,24 @@ function downloadFunc(divID){
             link.href = dataUrl;
             link.click();
         });
+}
+
+/*
+Function not used as adding images to PDF requires serve side app
+ */
+function downloadPDFFunc(divID){
+    const doc = new jspdf.jsPDF()
+    doc.html(document.getElementById('report'), {
+        callback: function (doc) {
+
+            let svgStr = serializer.serializeToString(document.getElementById('scatterP').innerHTML)
+            doc.addSvgAsImage(document.getElementById('scatterP').innerHTML,
+                0, 0, 210, 297)
+
+            doc.save('a4.pdf')
+        }
+    })
+
 }
 
 function downloadData(){
@@ -678,7 +708,6 @@ $(document).ready(function (){
                 options += '<option value="'+String(d.STATEFP)+'">'+stateFIPS[d.STATEFP]+'</option>'
             }
         })
-
         $("#plotStateIn").html(options)
 
     })
@@ -690,7 +719,7 @@ function plotFunc(){
     var d = d3.csv("data/county.csv", function (data){
         thisFIPS = data.filter(function (row) {
             if (Number(row["STATEFP"]) === Number($("#plotStateIn").val()) && row["NAMELSAD"]===$("#plotCountyIn").val() ) {
-
+                document.getElementById("reportTitle").innerHTML = "Historical Yield of "+curLocation
                 scatterGen("scatterP",Number(row.GEOID))
                 return row.GEOID;
             }
