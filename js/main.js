@@ -12,6 +12,22 @@ var curCrop;
 var curYear;
 var curMonth;
 var curProperty;
+let curFIPS;
+let statesData;
+$.ajax("data/gz_2010_us_040_00_20m.json", {
+    dataType: "json",
+    success: function(response){
+        statesData = response;
+    }
+})
+let countyBoundaries;
+$.ajax("data/gz_2010_us_050_00_20m.json", {
+    dataType: "json",
+    success: function(response){
+        countyBoundaries = response;
+    }
+})
+
 
 var curDate = {
     "0": "05/13",
@@ -32,7 +48,9 @@ function createMap(){
     var map = L.map('map', {
         center: [43,-93],
         zoom: 5.5,
-        zoomControl: false
+        zoomControl: false,
+        maxBounds: [[20,-130],[52,-60]],
+        maxBoundsViscosity: 1.0,
     });
 
     curMap = map;
@@ -40,8 +58,9 @@ function createMap(){
     //add OSM base tilelayer
     L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
         attribution: '&copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a>',
-        maxZoom: 19
+        maxZoom: 19,
     }).addTo(curMap);
+
 
     curCrop = 'corn'; // or 'soybean'
     curYear = '2021'; // 2010-2021
@@ -52,9 +71,8 @@ function createMap(){
     //call getData function
     getData(curMap, curCrop, curYear, curMonth, curLocation);
 
-
-
 }
+
 
 //function to retrieve the data and place it on the map
 function getData(map, crop, year, month, location){
@@ -67,7 +85,7 @@ function getData(map, crop, year, month, location){
         success: function(response){
             // create an attributes array
             var attributes = processData(response);
-                console.log(response)
+
             // update global variables curAttrs and curResponse
             curAttrs = attributes;
             curResponse = response;
@@ -76,8 +94,29 @@ function getData(map, crop, year, month, location){
             // createChart(response,attributes);
 
             // create proportional symbols, with initial index as 0, i.e., 2010
+
+
             curLayer = createChoropleth(response, map, attributes, 0);
             map.addLayer(curLayer);
+
+            L.geoJson(countyBoundaries, {
+                'type': 'Feature',
+                style:{
+                    weight: 1,
+                    fill: false,
+                    color: 'gray',
+                    dashArray: '3',
+                }}).addTo(curMap);
+            //US States Boundary layer
+            L.geoJson(statesData, {
+                'type': 'Feature',
+                style:{
+                    weight: 3,
+                    fill: false,
+                    color: 'grey',
+                    dashArray: '3',
+                }
+            }).addTo(curMap);
 
             // update map extent
             if (location != '') {
@@ -108,7 +147,6 @@ function getData(map, crop, year, month, location){
 
         }
     });
-
 };
 
 function processData(data){
@@ -117,8 +155,7 @@ function processData(data){
 
     //properties of the first feature in the dataset
     var properties = data.features[0].properties;
-    console.log("data.features[0].properties")
-    console.log(properties)
+
     //push each attribute name into attributes array
     // for (var attribute in properties){
     //     //only take attributes with population values
@@ -155,6 +192,21 @@ function createChoropleth(data, map, attrs, idx){
 
     return geoJsonLayer;
 };
+
+function waitForElement(){
+    if(typeof curMap !== "undefined"){
+        //variable exists, do what you want
+        curMap.on('moveend', function() {
+            let bounds = curMap.getBounds()
+
+
+        })
+    }
+    else{
+        setTimeout(waitForElement, 250);
+    }
+}
+waitForElement()
 
 // color scheme referring https://leafletjs.com/examples/choropleth/
 function getColor(d) {
@@ -196,7 +248,7 @@ function style(feature) {
     return {
         //fillColor: getColor(feature.properties.pred), // TODO: change to curProperty
         fillColor: getColor(feature.properties[curProperty]), // TODO: change to curProperty
-        weight: 2,
+        weight: 0,
         opacity: 1,
         color: 'white',
         dashArray: '3',
@@ -359,22 +411,33 @@ function zoomToFeature(e) {
     updateClicked(e);
 }
 
+function zoomToState(e) {
+    updateClicked(e)
+}
+
 function updateClicked(e){
     curLocation = e.target.feature.properties.NAMELSAD;
+    curFIPS = e.target.feature.properties.FIPS;
     document.getElementById("plotCountyIn")
         .setAttribute('value',curLocation)
     let tempfips = String(e.target.feature.properties.FIPS)
-    tempfips = tempfips.length===4?"0"+tempfips.slice(0):tempfips.slice(0,2)
+    tempfips = tempfips.length===4?"0"+tempfips[0]:tempfips.slice(0,2)
+
+    let feature = statesData.features.filter(d=>d.properties.STATE===tempfips)
+    let bounds = L.geoJSON(feature).getBounds()
+    curMap.fitBounds(bounds)
+
     let options = '<option value="'+tempfips+'">'+stateFIPS[tempfips]+'</option>'
     $("#plotStateIn").html(options)
     plotFunc()
+
 }
 
 function onEachFeature(feature, layer) {
     layer.on({
         mouseover: highlightFeature,
         mouseout: resetHighlight,
-        click: zoomToFeature
+        click: zoomToState,
     });
 }
 
@@ -609,7 +672,6 @@ function filter(node) {
     return true;
 }
 
-
 function downloadFunc(divID){
     // var testDiv = document.getElementById("testdiv");
     domtoimage
@@ -622,9 +684,6 @@ function downloadFunc(divID){
         });
 }
 
-/*
-Function not used as adding images to PDF requires serve side app
- */
 function downloadPDFFunc(divID){
     const doc = new jspdf.jsPDF()
     doc.html(document.getElementById('report'), {
@@ -689,7 +748,6 @@ function downloadData(){
     }
 }
 
-
 // FIPS of States as dictionary
 const stateFIPS = {'01': 'ALABAMA', '02': 'ALASKA', '04': 'ARIZONA', '05': 'ARKANSAS', '06': 'CALIFORNIA', '08': 'COLORADO', '09': 'CONNECTICUT', '10': 'DELAWARE', '11': 'DISTRICT OF COLUMBIA', '12': 'FLORIDA', '13': 'GEORGIA', '15': 'HAWAII', '16': 'IDAHO', '17': 'ILLINOIS', '18': 'INDIANA', '19': 'IOWA', '20': 'KANSAS', '21': 'KENTUCKY', '22': 'LOUISIANA', '23': 'MAINE', '24': 'MARYLAND', '25': 'MASSACHUSETTS', '26': 'MICHIGAN', '27': 'MINNESOTA', '28': 'MISSISSIPPI', '29': 'MISSOURI', '30': 'MONTANA', '31': 'NEBRASKA', '32': 'NEVADA', '33': 'NEW HAMPSHIRE', '34': 'NEW JERSEY', '35': 'NEW MEXICO', '36': 'NEW YORK', '37': 'NORTH CAROLINA', '38': 'NORTH DAKOTA', '39': 'OHIO', '40': 'OKLAHOMA', '41': 'OREGON', '42': 'PENNSYLVANIA', '44': 'RHODE ISLAND', '45': 'SOUTH CAROLINA', '46': 'SOUTH DAKOTA', '47': 'TENNESSEE', '48': 'TEXAS', '49': 'UTAH', '50': 'VERMONT', '51': 'VIRGINIA', '53': 'WASHINGTON', '54': 'WEST VIRGINIA', '55': 'WISCONSIN', '56': 'WYOMING'}
 let countyData;
@@ -719,6 +777,8 @@ function plotFunc(){
     var d = d3.csv("data/county.csv", function (data){
         thisFIPS = data.filter(function (row) {
             if (Number(row["STATEFP"]) === Number($("#plotStateIn").val()) && row["NAMELSAD"]===$("#plotCountyIn").val() ) {
+                curFIPS = row["STATEFP"]
+                curLocation = row["NAMELSAD"]
                 document.getElementById("reportTitle").innerHTML = "Historical Yield of "+curLocation
                 scatterGen("scatterP",Number(row.GEOID))
                 return row.GEOID;
@@ -728,7 +788,6 @@ function plotFunc(){
     })
 
 }
-
 
 
 /**
