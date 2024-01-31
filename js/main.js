@@ -259,6 +259,15 @@ function style(feature) {
 }
 
 let curMouserOverFIPS = null;
+let highlightedLayers = []
+function resetAllHighlight(){
+    if (highlightedLayers.length > 0) {
+        highlightedLayers.forEach(layer => {
+            curLayer.resetStyle(layer)
+        })
+        highlightedLayers = []
+    }
+}
 function highlightHelper(e) {
     var layer = e.target;
     curMouserOverFIPS = layer.feature.properties.FIPS;
@@ -407,8 +416,12 @@ function highlightFeature(e) {
     highlightHelper(e)
 }
 
+
+
 function resetHighlight(e) {
     if(doubleClicked) return
+
+    if (highlightedLayers.includes(e.target)) return;
     curLayer.resetStyle(e.target);
     var content = "<h4>Crop Yield Information</h4>" + "Hover over a county";
     updateHoverControl(content);
@@ -422,10 +435,20 @@ function zoomToFeature(e) {
 
 function zoomToState(e) {
     setTimeout(function() {
-        if (!doubleClicked)updateClicked(e,true)
-        else {
+
+        if (ctrlKeyDown) {
+            highlightHelper(e)
+            highlightedLayers.push(e.target)
+        } else {
+            resetAllHighlight()
+            highlightedLayers.push(e.target)
+            highlightHelper(e)
+        }
+        if (!doubleClicked){
+            updateClicked(e,true)
+        } else {
             updateClicked(e,false)
-            highlightHelper(e)}
+        }
     },300)
 }
 
@@ -472,7 +495,7 @@ document.addEventListener('keyup', function(event) {
 let doubleClicked = false;
 document.addEventListener('dblclick', function(event) {
     doubleClicked = !doubleClicked;
-    //
+
     // if(doubleClicked){
     //     curMap.dragging.disable()
     //     curMap.scrollWheelZoom.disable()
