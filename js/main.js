@@ -43,6 +43,7 @@ var curDate = {
 }
 
 let avePred;
+var drawnFeatures = new L.FeatureGroup();
 d3.csv("data/average_pred.csv", function(data) {
     avePred= data;
 })
@@ -74,6 +75,50 @@ function createMap(){
 
     //call getData function
     getData(curMap, curCrop, curYear, curMonth, curLocation);
+
+    // // leaflet draw control
+    // map.addLayer(drawnFeatures);
+    // var drawControl = new L.Control.Draw({
+    //     edit: {
+    //         featureGroup: drawnFeatures },
+    //     position: 'bottomright',
+    //     draw: {
+    //         polygon: {
+    //             shapeOptions: {
+    //                 color: 'purple'
+    //             },
+    //             //  allowIntersection: false,
+    //             //  drawError: {
+    //             //   color: 'orange',
+    //             //   timeout: 1000
+    //             //  },
+    //         },
+    //         polyline: {
+    //             shapeOptions: {
+    //                 color: 'red'
+    //             },
+    //         },
+    //         rect: {
+    //             shapeOptions: {
+    //                 color: 'green'
+    //             },
+    //         },
+    //         circle: {
+    //             shapeOptions: {
+    //                 color: 'steelblue'
+    //             },
+    //         },
+    //     },
+    // });
+    // map.addControl(drawControl);
+    // console.log("drawControl");
+    //
+    // map.on('draw:created', function (e) {
+    //     var type = e.layerType;
+    //     var layer = e.layer;
+    //     console.log(e);
+    //     drawnFeatures.addLayer(layer);
+    // });
 
 }
 
@@ -268,18 +313,19 @@ function resetAllHighlight(){
         highlightedLayers = []
     }
 }
-function highlightHelper(e) {
+function highlightHelper(e,color='default') {
     var layer = e.target;
     curMouserOverFIPS = layer.feature.properties.FIPS;
     layer.setStyle({
         weight: 5,
-        color: '#666',
+        color: color==="default"?'#666':color,
         dashArray: '',
         fillOpacity: 0.7
     });
 
     layer.bringToFront();
 
+    if(highlightedLayers.length>0 && color==='default'){return} //default color means not clicked
     var content = '<h4>Crop Yield Information</h4>' +
                 '<b>' + layer.feature.properties.NAMELSAD + '</b><br />' +
                 'Crop type: ' + curCrop + '<br />' +
@@ -287,8 +333,9 @@ function highlightHelper(e) {
                 'Yield: ' + Number(layer.feature.properties.yield).toFixed(2) + ' unit / mi<sup>2</sup><br />' +
                 'Prediction: ' + Number(layer.feature.properties.pred).toFixed(2) + ' unit / mi<sup>2</sup><br />' +
                 'Error: ' + Number(layer.feature.properties.error).toFixed(2) + ' unit / mi<sup>2</sup>';
-    updateHoverControl(content);
-
+    if(highlightedLayers.length===0||color!=='default') {
+        updateTemporalInfo(content);
+    }
     // update a graph
     var cornYield = d3.csv("data/corn_yield_US.csv", function(data) {
         var county = data.filter(function(row) {
@@ -321,6 +368,7 @@ function highlightHelper(e) {
             },
             width = 325 - margin.left - margin.right,
             height = 220 - margin.top - margin.bottom;
+
 
         // append the svg object to the body of the page
         if(layer.feature.properties.FIPS===curMouserOverFIPS) {
@@ -413,6 +461,7 @@ function highlightHelper(e) {
 
 function highlightFeature(e) {
     if(doubleClicked) return
+    if(highlightedLayers.includes(e.target)) return;
     highlightHelper(e)
 }
 
@@ -423,8 +472,11 @@ function resetHighlight(e) {
 
     if (highlightedLayers.includes(e.target)) return;
     curLayer.resetStyle(e.target);
+    e.target.bringToBack()
     var content = "<h4>Crop Yield Information</h4>" + "Hover over a county";
-    updateHoverControl(content);
+
+    if(highlightedLayers.length>0) return;
+    updateTemporalInfo(content);
 }
 
 // too large, use zoomToState instead
@@ -435,14 +487,22 @@ function zoomToFeature(e) {
 
 function zoomToState(e) {
     setTimeout(function() {
+        if(highlightedLayers.includes(e.target)){
+            highlightedLayers = highlightedLayers.filter(d=>d!==e.target)
+            resetHighlight(e)
+            if(ctrlKeyDown){
+                multiChoice = multiChoice.filter(d=>d!==e.target.feature.properties.FIPS)
+            }
+            return
+        }
 
         if (ctrlKeyDown) {
-            highlightHelper(e)
+            highlightHelper(e, '#68da4c')
             highlightedLayers.push(e.target)
         } else {
             resetAllHighlight()
             highlightedLayers.push(e.target)
-            highlightHelper(e)
+            highlightHelper(e, '#68da4c')
         }
         if (!doubleClicked){
             updateClicked(e,true)
@@ -453,13 +513,14 @@ function zoomToState(e) {
 }
 
 function updateClicked(e,fitBounds=true){
+
     curLocation = e.target.feature.properties.NAMELSAD;
     curFIPS = e.target.feature.properties.FIPS;
     document.getElementById("plotCountyIn")
         .setAttribute('value',curLocation)
     let tempfips = String(e.target.feature.properties.FIPS)
     if(ctrlKeyDown) multiChoice.push(tempfips)
-    else multiChoice = []
+    else {multiChoice = [];multiChoice.push(tempfips)}
     tempfips = tempfips.length===4?"0"+tempfips[0]:tempfips.slice(0,2)
 
     let feature = statesData.features.filter(d=>d.properties.STATE===tempfips)
@@ -469,7 +530,7 @@ function updateClicked(e,fitBounds=true){
     let options = '<option value="'+tempfips+'">'+stateFIPS[tempfips]+'</option>'
     $("#plotStateIn").html(options)
     console.log(multiChoice)
-    if(multiChoice.length>0){
+    if(multiChoice.length>1){
         plotFunc('update')
     }else{
         plotFunc()
@@ -533,10 +594,11 @@ function createHoverControl(response, map, attrs){
     curInfo.addTo(map);
 
     var content = "<h4>Crop Yield Information</h4>" + "Hover over a county";
-    updateHoverControl(content);
+    updateTemporalInfo(content);
 }
 
-function updateHoverControl(content){
+function updateTemporalInfo(content,update=false){
+    // if(highlightedLayers.length>0 ) return
     $('#temporal-info').html(content);
 }
 
@@ -775,6 +837,7 @@ function downloadPDFFunc(divID){
 **/
 
 function downloadData(){
+    applySetting()
     switch( document.getElementById("dataDownFormat").value ){
         case 'csv':
             let t = curResponse.features.map(d=>
@@ -798,7 +861,7 @@ function downloadData(){
             url = window.URL.createObjectURL(blob)
             var link = document.createElement("a");
             link.setAttribute("href", url);
-            link.setAttribute("download", "my_data.csv");
+            link.setAttribute("download", "prediction_"+curCrop+"_"+curYear+"_"+curMonth+".csv");
             document.body.appendChild(link); // Required for FF
 
             link.click();
@@ -852,6 +915,7 @@ $(document).ready(function (){
  */
 function plotFunc(mode='new'){
 
+
     var thisFIPS;
     var d = d3.csv("data/county.csv", function (data){
         thisFIPS = data.filter(function (row) {
@@ -863,6 +927,20 @@ function plotFunc(mode='new'){
                 return row.GEOID;
             }
     })
+        console.log(curFIPS)
+        if(highlightedLayers.length==0){
+            curMap.eachLayer(function (layer) {
+                if (Object.hasOwn(layer, "feature")
+                    && Object.hasOwn(layer.feature, "properties")) {
+                    // console.log(layer.feature.properties.FIPS)
+                    if (layer.feature.properties.FIPS !== undefined
+                        && (layer.feature.properties.FIPS).toString() ===  (curFIPS).toString()) {
+                        layer.fireEvent('click')
+                        console.log("clicked")
+                    }
+                }
+            })
+        }
     return thisFIPS
     })
 
