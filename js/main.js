@@ -13,21 +13,21 @@ var curYear;
 var curMonth;
 var curProperty;
 let curFIPS;
-let statesData;
+
+let statesData; //State boundaries
 $.ajax("data/gz_2010_us_040_00_20m.json", {
     dataType: "json",
     success: function(response){
         statesData = response;
     }
 })
-let countyBoundaries;
+let countyBoundaries; //County boundaries
 $.ajax("data/gz_2010_us_050_00_20m.json", {
     dataType: "json",
     success: function(response){
         countyBoundaries = response;
     }
 })
-
 
 var curDate = {
     "0": "05/13",
@@ -42,6 +42,11 @@ var curDate = {
     "9": "10/04"
 }
 
+let avePred;
+var drawnFeatures = new L.FeatureGroup();
+d3.csv("data/average_pred.csv", function(data) {
+    avePred= data;
+})
 //function to instantiate the Leaflet map
 function createMap(){
     //create the map
@@ -52,7 +57,7 @@ function createMap(){
         maxBounds: [[20,-130],[52,-60]],
         maxBoundsViscosity: 1.0,
     });
-
+    map.doubleClickZoom.disable();
     curMap = map;
 
     //add OSM base tilelayer
@@ -70,6 +75,50 @@ function createMap(){
 
     //call getData function
     getData(curMap, curCrop, curYear, curMonth, curLocation);
+
+    // // leaflet draw control
+    // map.addLayer(drawnFeatures);
+    // var drawControl = new L.Control.Draw({
+    //     edit: {
+    //         featureGroup: drawnFeatures },
+    //     position: 'bottomright',
+    //     draw: {
+    //         polygon: {
+    //             shapeOptions: {
+    //                 color: 'purple'
+    //             },
+    //             //  allowIntersection: false,
+    //             //  drawError: {
+    //             //   color: 'orange',
+    //             //   timeout: 1000
+    //             //  },
+    //         },
+    //         polyline: {
+    //             shapeOptions: {
+    //                 color: 'red'
+    //             },
+    //         },
+    //         rect: {
+    //             shapeOptions: {
+    //                 color: 'green'
+    //             },
+    //         },
+    //         circle: {
+    //             shapeOptions: {
+    //                 color: 'steelblue'
+    //             },
+    //         },
+    //     },
+    // });
+    // map.addControl(drawControl);
+    // console.log("drawControl");
+    //
+    // map.on('draw:created', function (e) {
+    //     var type = e.layerType;
+    //     var layer = e.layer;
+    //     console.log(e);
+    //     drawnFeatures.addLayer(layer);
+    // });
 
 }
 
@@ -147,7 +196,7 @@ function getData(map, crop, year, month, location){
 
         }
     });
-};
+}
 
 function processData(data){
     //empty array to hold attributes
@@ -166,13 +215,13 @@ function processData(data){
     // // return the pop attrs retrieved from the first feature
     // return attrs;
     return properties;
-};
+}
 
 function createChoropleth(data, map, attrs, idx){
     // remove current layer if exists
     if (curLayer){
         map.removeLayer(curLayer);
-    };
+    }
 
     //create a new/updated Leaflet GeoJSON layer and return it to the map
     // var geoJsonLayer = L.geoJson(data, {
@@ -191,15 +240,13 @@ function createChoropleth(data, map, attrs, idx){
     });
 
     return geoJsonLayer;
-};
+}
 
 function waitForElement(){
     if(typeof curMap !== "undefined"){
         //variable exists, do what you want
         curMap.on('moveend', function() {
             let bounds = curMap.getBounds()
-
-
         })
     }
     else{
@@ -257,18 +304,28 @@ function style(feature) {
 }
 
 let curMouserOverFIPS = null;
-function highlightFeature(e) {
+let highlightedLayers = []
+function resetAllHighlight(){
+    if (highlightedLayers.length > 0) {
+        highlightedLayers.forEach(layer => {
+            curLayer.resetStyle(layer)
+        })
+        highlightedLayers = []
+    }
+}
+function highlightHelper(e,color='default') {
     var layer = e.target;
     curMouserOverFIPS = layer.feature.properties.FIPS;
     layer.setStyle({
         weight: 5,
-        color: '#666',
+        color: color==="default"?'#666':color,
         dashArray: '',
         fillOpacity: 0.7
     });
 
     layer.bringToFront();
 
+    if(highlightedLayers.length>0 && color==='default'){return} //default color means not clicked
     var content = '<h4>Crop Yield Information</h4>' +
                 '<b>' + layer.feature.properties.NAMELSAD + '</b><br />' +
                 'Crop type: ' + curCrop + '<br />' +
@@ -276,8 +333,9 @@ function highlightFeature(e) {
                 'Yield: ' + Number(layer.feature.properties.yield).toFixed(2) + ' unit / mi<sup>2</sup><br />' +
                 'Prediction: ' + Number(layer.feature.properties.pred).toFixed(2) + ' unit / mi<sup>2</sup><br />' +
                 'Error: ' + Number(layer.feature.properties.error).toFixed(2) + ' unit / mi<sup>2</sup>';
-    updateHoverControl(content);
-
+    if(highlightedLayers.length===0||color!=='default') {
+        updateTemporalInfo(content);
+    }
     // update a graph
     var cornYield = d3.csv("data/corn_yield_US.csv", function(data) {
         var county = data.filter(function(row) {
@@ -310,6 +368,7 @@ function highlightFeature(e) {
             },
             width = 325 - margin.left - margin.right,
             height = 220 - margin.top - margin.bottom;
+
 
         // append the svg object to the body of the page
         if(layer.feature.properties.FIPS===curMouserOverFIPS) {
@@ -400,44 +459,119 @@ function highlightFeature(e) {
     });
 }
 
-function resetHighlight(e) {
-    curLayer.resetStyle(e.target);
-    var content = "<h4>Crop Yield Information</h4>" + "Hover over a county";
-    updateHoverControl(content);
+function highlightFeature(e) {
+    if(doubleClicked) return
+    if(highlightedLayers.includes(e.target)) return;
+    highlightHelper(e)
 }
 
+
+
+function resetHighlight(e) {
+    if(doubleClicked) return
+
+    if (highlightedLayers.includes(e.target)) return;
+    curLayer.resetStyle(e.target);
+    e.target.bringToBack()
+    var content = "<h4>Crop Yield Information</h4>" + "Hover over a county";
+
+    if(highlightedLayers.length>0) return;
+    updateTemporalInfo(content);
+}
+
+// too large, use zoomToState instead
 function zoomToFeature(e) {
     curMap.fitBounds(e.target.getBounds());
     updateClicked(e);
 }
 
 function zoomToState(e) {
-    updateClicked(e)
+    setTimeout(function() {
+        if(highlightedLayers.includes(e.target)){
+            highlightedLayers = highlightedLayers.filter(d=>d!==e.target)
+            resetHighlight(e)
+            if(ctrlKeyDown){
+                multiChoice = multiChoice.filter(d=>d!==e.target.feature.properties.FIPS)
+            }
+            return
+        }
+
+        if (ctrlKeyDown) {
+            highlightHelper(e, '#68da4c')
+            highlightedLayers.push(e.target)
+        } else {
+            resetAllHighlight()
+            highlightedLayers.push(e.target)
+            highlightHelper(e, '#68da4c')
+        }
+        if (!doubleClicked){
+            updateClicked(e,true)
+        } else {
+            updateClicked(e,false)
+        }
+    },300)
 }
 
-function updateClicked(e){
+function updateClicked(e,fitBounds=true){
+
     curLocation = e.target.feature.properties.NAMELSAD;
     curFIPS = e.target.feature.properties.FIPS;
     document.getElementById("plotCountyIn")
         .setAttribute('value',curLocation)
     let tempfips = String(e.target.feature.properties.FIPS)
+    if(ctrlKeyDown) multiChoice.push(tempfips)
+    else {multiChoice = [];multiChoice.push(tempfips)}
     tempfips = tempfips.length===4?"0"+tempfips[0]:tempfips.slice(0,2)
 
     let feature = statesData.features.filter(d=>d.properties.STATE===tempfips)
     let bounds = L.geoJSON(feature).getBounds()
-    curMap.fitBounds(bounds)
+    if(fitBounds)curMap.fitBounds(bounds)
 
     let options = '<option value="'+tempfips+'">'+stateFIPS[tempfips]+'</option>'
     $("#plotStateIn").html(options)
-    plotFunc()
+    console.log(multiChoice)
+    if(multiChoice.length>1){
+        plotFunc('update')
+    }else{
+        plotFunc()
+    }
 
 }
 
+let ctrlKeyDown = false;
+let multiChoice = [];
+document.addEventListener('keydown', function(event) {
+    if(event.key === "Control") {
+        ctrlKeyDown = true;
+        // console.log("Control key is pressed.");
+    }
+});
+document.addEventListener('keyup', function(event) {
+    if(event.key === "Control") {
+        ctrlKeyDown = false;
+        // console.log("Control key is released.");
+    }
+});
+
+let doubleClicked = false;
+document.addEventListener('dblclick', function(event) {
+    doubleClicked = !doubleClicked;
+
+    // if(doubleClicked){
+    //     curMap.dragging.disable()
+    //     curMap.scrollWheelZoom.disable()
+    // }else {
+    //     curMap.dragging.enable()
+    //     curMap.scrollWheelZoom.enable()
+    //     curLayer.resetStyle()
+    // }
+
+})
 function onEachFeature(feature, layer) {
     layer.on({
         mouseover: highlightFeature,
         mouseout: resetHighlight,
-        click: zoomToState,
+        click:zoomToState,
     });
 }
 
@@ -460,10 +594,11 @@ function createHoverControl(response, map, attrs){
     curInfo.addTo(map);
 
     var content = "<h4>Crop Yield Information</h4>" + "Hover over a county";
-    updateHoverControl(content);
+    updateTemporalInfo(content);
 }
 
-function updateHoverControl(content){
+function updateTemporalInfo(content,update=false){
+    // if(highlightedLayers.length>0 ) return
     $('#temporal-info').html(content);
 }
 
@@ -532,7 +667,7 @@ function createMenu(map){
 
 var locations = ['Cuming County', 'Lancaster County', 'Nuckolls County', 'Minnehaha County', 'Hancock County', 'Allen County', 'Sauk County', 'Stone County', 'Henry County', 'Lake County', 'Barton County', 'Keith County', 'Phelps County', 'Menominee County', 'Jasper County', 'Steuben County', 'Fayette County', 'Greenwood County', 'Alpena County', 'Doniphan County', 'Clare County', 'Republic County', 'Webster County', 'Hancock County', 'Hutchinson County', 'Marquette County', 'Clay County', 'Knox County', 'Livingston County', 'Dakota County', 'Leelanau County', 'Butler County', 'Ohio County', 'Moody County', 'Decatur County', 'Perry County', 'Boyd County', 'Mille Lacs County', 'Walsh County', 'Morgan County', 'Portage County', 'Polk County', 'Benton County', 'Douglas County', 'Wabash County', 'Huntington County', 'Decatur County', 'Wabash County', 'Allen County', 'Marshall County', 'Thomas County', 'Sioux County', 'Fillmore County', 'Lac qui Parle County', 'Pierce County', 'McLean County', 'Phillips County', 'Holt County', 'Johnson County', 'La Crosse County', 'Bond County', 'Brown County', 'McLeod County', 'Dunn County', 'Madison County', 'Jackson County', 'Cedar County', 'Orange County', 'Brown County', 'Lyon County', 'Carroll County', 'Hamilton County', 'Pocahontas County', 'Independence County', 'Lonoke County', 'Newton County', 'Clark County', 'Schoolcraft County', 'Jersey County', 'Wallace County', 'Alger County', 'Fulton County', 'Newaygo County', 'Todd County', 'Logan County', 'Miller County', 'Riley County', 'Warrick County', 'Ellis County', 'Pratt County', 'Lane County', 'Piatt County', 'Kossuth County', 'Burke County', 'Harrison County', 'Keya Paha County', 'Webster County', 'Pope County', 'Jefferson County', 'Deuel County', 'Banner County', 'Madison County', 'Sanilac County', 'Wayne County', 'Nobles County', 'Aitkin County', 'Ramsey County', 'Trego County', 'Maries County', 'Arkansas County', 'Lawrence County', 'Bureau County', 'Scioto County', 'Vinton County', 'Howard County', 'Carroll County', 'Hubbard County', 'Sargent County', 'Reynolds County', 'Paulding County', 'Wells County', 'Palo Alto County', 'Ringgold County', 'Warren County', 'Greeley County', 'Jefferson County', 'Saline County', 'Clinton County', 'Jackson County', 'Dodge County', 'Freeborn County', 'Lake County', 'Coles County', 'Van Buren County', 'Mercer County', 'Effingham County', 'Clark County', 'Tippecanoe County', 'Dundy County', 'Grand Forks County', 'LaPorte County', 'Hamilton County', 'Greeley County', 'Henry County', 'Newton County', 'Posey County', 'Cumberland County', 'Pope County', 'Crawford County', 'Calhoun County', 'McPherson County', 'Fulton County', 'Miner County', 'Jerauld County', 'Decatur County', 'Dubois County', 'Worth County', 'Scott County', 'Christian County', 'Ripley County', 'Mercer County', 'Green Lake County', 'Walworth County', 'Fulton County', 'Union County', 'McDonald County', 'Scotts Bluff County', 'Dickey County', 'Barnes County', 'Sibley County', 'Chippewa County', 'Clinton County', 'Montgomery County', 'Atchison County', 'Macon County', 'St. Joseph County', 'Franklin County', 'Adams County', 'Olmsted County', 'McCook County', 'Franklin County', 'Burleigh County', 'Iron County', 'Kandiyohi County', 'Lawrence County', 'Ontonagon County', 'Rock County', 'Ziebach County', 'Baraga County', 'Boone County', 'Van Buren County', 'Cowley County', 'Johnson County', 'Harrison County', 'Bartholomew County', 'Brown County', 'Ward County', 'Logan County', 'Cass County', 'Douglas County', 'Bottineau County', 'Alcona County', 'Searcy County', 'Otoe County', 'Waseca County', 'Brule County', 'Clark County', 'Garland County', 'Osage County', 'Trumbull County', 'Marion County', 'Webster County', 'Cottonwood County', 'Black Hawk County', 'Pike County', 'Kearney County', 'Hitchcock County', 'Rock Island County', 'Sevier County', 'Cass County', 'Carroll County', 'Jefferson County', 'Lincoln County', 'Vernon County', 'Iron County', 'Monroe County', 'Rush County', 'Montgomery County', 'Stanton County', 'Koochiching County', 'Watonwan County', 'Sully County', 'Gibson County', 'Kimball County', 'Kendall County', 'Wright County', 'Kenosha County', 'Grundy County', 'Lake County', 'Ottawa County', 'Cook County', 'Gallatin County', 'Franklin County', 'Clay County', 'Benson County', 'Pike County', 'Lawrence County', 'Scott County', 'Adams County', 'Crawford County', 'Guernsey County', 'Barry County', 'Stone County', 'Clarke County', 'Fayette County', 'Warren County', 'Van Wert County', 'Adair County', 'Howard County', 'Milwaukee County', 'Scott County', 'Pickaway County', 'Antrim County', 'Lee County', 'Nemaha County', 'Pottawatomie County', 'Jackson County', 'Vermillion County', 'Roscommon County', 'Muskingum County', 'Custer County', 'Chickasaw County', 'DeKalb County', 'Hancock County', 'Stark County', 'Luce County', 'Bowman County', 'Stark County', 'Walworth County', 'Washington County', 'Dubuque County', 'Sherman County', 'Richland County', 'Adams County', 'Champaign County', 'Iroquois County', 'Poweshiek County', 'Wayne County', 'Cass County', 'Kingsbury County', 'Logan County', 'Gogebic County', 'Becker County', 'Ashland County', 'Ford County', 'Emmons County', 'Randolph County', 'Oneida County', 'Allen County', 'Douglas County', 'Waushara County', 'Izard County', 'Miller County', 'Platte County', 'Buchanan County', 'Henry County', 'Polk County', 'Ottawa County', 'Norman County', 'Shelby County', 'Benton County', 'Chisago County', 'Cole County', 'Berrien County', 'Dawes County', 'Montmorency County', 'Oscoda County', 'St. Clair County', 'Washington County', 'Scott County', 'Labette County', 'Harrison County', 'Marshall County', 'Scott County', 'Ogemaw County', 'Richland County', 'Ralls County', 'Menard County', 'Sheridan County', 'Fulton County', 'Johnson County', 'Washburn County', 'Winona County', 'Andrew County', 'Montgomery County', 'Cherokee County', 'Lafayette County', 'Waupaca County', 'Ozark County', 'Traill County', 'Vilas County', 'Beltrami County', 'Clark County', 'McHenry County', 'Wayne County', 'LaMoure County', 'Kidder County', 'Porter County', 'Hamilton County', 'Perry County', 'Cheyenne County', 'Wayne County', 'Marion County', 'Jackson County', 'Nelson County', 'Ray County', 'Hocking County', 'Linn County', 'Atchison County', 'Miami County', 'Ozaukee County', 'Sheboygan County', 'Cloud County', 'Dickinson County', 'Geary County', 'Lyon County', 'Butler County', 'Greene County', 'Rush County', 'Washington County', 'Laclede County', 'Craighead County', 'Saline County', 'White County', 'De Witt County', 'Goodhue County', 'Steele County', 'Vanderburgh County', 'Franklin County', 'Bayfield County', 'Portage County', 'Fond du Lac County', 'Kewaunee County', 'Chariton County', 'Russell County', 'Putnam County', 'Haakon County', 'Cleburne County', 'Wells County', 'Hot Spring County', 'Schuyler County', 'Columbia County', 'Griggs County', 'Clayton County', 'Barton County', 'Slope County', 'Garfield County', 'Ingham County', 'Shawnee County', 'Hanson County', 'Itasca County', 'Johnson County', 'Langlade County', 'Buena Vista County', 'Mills County', 'Delaware County', 'Dallas County', 'Wayne County', 'Stephenson County', 'Lapeer County', 'Kalkaska County', 'Divide County', 'Marion County', 'Douglas County', 'Cedar County', 'Ouachita County', 'Darke County', 'Dewey County', 'Owen County', 'Bollinger County', 'Pierce County', 'Union County', 'Kankakee County', 'McIntosh County', 'Platte County', 'Clay County', 'Randolph County', 'Butler County', 'Mason County', 'Yankton County', 'Rock County', 'Clinton County', 'Clinton County', 'Shiawassee County', 'Jewell County', 'Mitchell County', 'Jo Daviess County', 'Hancock County', 'Scott County', 'Williamson County', 'Stevens County', 'Brown County', 'Box Butte County', 'St. Clair County', 'Thurston County', 'Randolph County', 'Crawford County', 'Mahaska County', 'Douglas County', 'Jasper County', 'Adams County', 'Livingston County', 'Yell County', 'Comanche County', 'Lake County', 'Greene County', 'Appanoose County', 'Jefferson County', 'Boone County', 'Oregon County', 'Vigo County', 'Elkhart County', 'Meeker County', 'Ashland County', 'Madison County', 'Monroe County', 'Dallas County', 'Pawnee County', 'Wyandotte County', 'Tuscola County', 'Graham County', 'Lucas County', 'Mississippi County', 'Floyd County', 'Morton County', 'McPherson County', 'Red Willow County', 'Rock County', 'Mason County', 'Washington County', 'Eau Claire County', 'Sumner County', 'Oceana County', 'Kanabec County', 'Ashtabula County', 'Livingston County', 'Preble County', 'Jackson County', 'Miami County', 'Washtenaw County', 'LaGrange County', 'Oconto County', 'Forest County', 'Sawyer County', 'Stark County', 'Van Buren County', 'Gosper County', 'Mahoning County', 'Wayne County', 'Osage County', 'Kane County', 'Newton County', 'Cavalier County', 'Gove County', 'Gage County', 'Harrison County', 'Tuscarawas County', 'Highland County', 'Lake of the Woods County', 'Lyman County', 'Trempealeau County', 'Jackson County', 'Knox County', 'Dawson County', 'Ford County', 'Williams County', 'Cass County', 'Hardin County', 'Arthur County', 'Johnson County', 'Neosho County', 'Linn County', 'Hayes County', 'Calhoun County', 'Hillsdale County', 'Custer County', 'Beadle County', 'Johnson County', 'Jones County', 'Billings County', 'Antelope County', 'Gasconade County', 'Cross County', 'Phillips County', 'Pulaski County', 'Benzie County', 'St. Charles County', 'Brown County', 'Holt County', 'Mountrail County', 'Sioux County', 'Brown County', 'Clark County', 'Grundy County', 'Lincoln County', 'Polk County', 'Green County', 'Franklin County', 'McLean County', 'Wright County', 'Crawford County', 'Otter Tail County', 'Cass County', 'Outagamie County', 'Lafayette County', 'Morrow County', 'Foster County', 'Crawford County', 'Ste. Genevieve County', 'McDonough County', 'Montgomery County', 'Jackson County', 'Lincoln County', 'Dakota County', 'Adams County', 'Clark County', 'Worth County', 'Sherman County', 'Campbell County', 'Harding County', 'Gratiot County', 'Union County', 'Massac County', 'Logan County', 'Merrick County', 'Sheridan County', 'Morgan County', 'Grant County', 'Henry County', 'Codington County', 'Clay County', 'Faulkner County', 'Keokuk County', 'Greene County', 'Lake County', 'Anoka County', 'Bon Homme County', 'St. Joseph County', 'Pembina County', 'Bennett County', 'Baxter County', 'Story County', 'Bourbon County', 'Taylor County', 'Mower County', 'Murray County', 'Phelps County', 'Starke County', 'Mitchell County', 'Pawnee County', 'Marathon County', 'Wexford County', 'Hickory County', 'Barry County', 'Ramsey County', 'Little River County', 'Sarpy County', 'Wilkin County', 'Randolph County', 'Marion County', 'Pike County', 'Woodford County', 'Perry County', 'Grundy County', 'Johnson County', 'Isanti County', 'Benton County', 'Fountain County', 'Shelby County', 'Fayette County', 'Perry County', 'Polk County', 'Winneshiek County', 'Florence County', 'Wadena County', 'Winnebago County', 'Pennington County', 'Boone County', 'Genesee County', 'Roberts County', 'Ogle County', 'Richland County', 'Barron County', 'Iron County', 'Wabasha County', 'Presque Isle County', 'Tipton County', 'Clay County', 'Ashley County', 'Desha County', 'Washington County', 'Caldwell County', 'Crawford County', 'Lewis County', 'Grant County', 'Moultrie County', 'Crow Wing County', 'St. Francis County', 'Lincoln County', 'Smith County', 'Montgomery County', 'Calhoun County', 'Polk County', 'Traverse County', 'Cass County', 'Burt County', 'Sangamon County', 'Otsego County', 'Sac County', 'Yellow Medicine County', 'Mecosta County', 'Ripley County', 'Tazewell County', 'Sharp County', 'Rice County', 'Warren County', 'Todd County', 'Marshall County', 'Switzerland County', 'LaSalle County', 'Delaware County', 'Morris County', 'Davis County', 'Monroe County', 'Delaware County', 'Jackson County', 'Floyd County', 'Turner County', 'Stoddard County', 'Stearns County', 'Saunders County', 'Sherburne County', 'Davison County', 'Racine County', 'Shawano County', 'Audubon County', 'Le Sueur County', 'Dodge County', 'Jones County', 'Barber County', 'Pulaski County', 'Logan County', 'Gentry County', 'Blaine County', 'Adair County', 'Erie County', 'Vermilion County', 'St. Louis County', 'Boone County', 'Dane County', 'Morgan County', 'Marshall County', 'Huron County', 'Iosco County', 'Grant County', 'Hardin County', 'Clinton County', 'St. Louis County', 'Lorain County', 'Boone County', 'Dixon County', 'Calumet County', 'Ionia County', 'Cook County', 'Kent County', 'Stanton County', 'Jasper County', 'Plymouth County', 'Pottawattamie County', 'Wright County', 'Audrain County', 'Jefferson County', 'Greene County', 'Burnett County', 'Stanley County', 'Wheeler County', 'Grant County', 'Chase County', 'Aurora County', 'Franklin County', 'Crawford County', 'Chippewa County', 'Pennington County', 'Lincoln County', 'Chippewa County', 'Woodson County', 'Macomb County', 'Jasper County', 'Spencer County', 'McKenzie County', 'Calhoun County', 'Kosciusko County', 'Woodruff County', 'Perkins County', 'Taylor County', 'Defiance County', 'Marion County', 'Warren County', 'Page County', 'Jefferson County', 'Faribault County', 'Rawlins County', 'Thomas County', 'Cherokee County', 'White County', 'Cooper County', 'Dickinson County', 'Will County', 'Brookings County', 'Clay County', 'Boone County', 'Des Moines County', 'Scott County', 'Ottawa County', 'Carlton County', 'Athens County', 'Jefferson County', 'Douglas County', 'Jay County', 'Montcalm County', 'Lee County', 'Rice County', 'Sandusky County', 'Pulaski County', 'Saginaw County', 'Madison County', 'Dodge County', 'Marquette County', 'Sullivan County', 'Ness County', 'Chase County', 'Montgomery County', 'Conway County', 'Nodaway County', 'Ransom County', 'Bay County', 'Pine County', 'Brown County', 'Wilson County', 'Arenac County', 'Lee County', 'Osborne County', 'Emmet County', 'Fremont County', 'Taney County', 'Linn County', 'Buffalo County', 'Mellette County', 'Stevens County', 'Monroe County', 'Clark County', 'Haskell County', 'Iowa County', 'Buffalo County', 'Butler County', 'Moniteau County', 'Howard County', 'Nevada County', 'Auglaize County', 'Emmet County', 'Saline County', 'Callaway County', 'Cheboygan County', 'Gladwin County', 'Woodbury County', 'Alexander County', 'Jefferson County', 'Lincoln County', 'Clay County', 'Potter County', 'Kingman County', 'Texas County', 'Pulaski County', 'Crawford County', 'Geauga County', 'Towner County', 'Hamilton County', 'Buchanan County', 'DuPage County', 'Fall River County', 'Kittson County', 'Fillmore County', 'Sullivan County', 'Stafford County', 'Monroe County', 'White County', 'Noble County', 'York County', 'Clay County', 'Morgan County', 'Holmes County', 'Osceola County', 'Jennings County', 'Saline County', 'Kalamazoo County', 'Daviess County', 'Grand Traverse County', 'Hughes County', 'Hyde County', 'Greene County', 'Seward County', 'Columbiana County', 'Grant County', 'Benton County', 'Dickinson County', 'Richland County', 'Madison County', 'Crawford County', 'Carroll County', 'Lake County', 'Dallas County', 'Wood County', 'Belmont County', 'Carter County', 'Clay County', 'Cerro Gordo County', 'Greene County', 'Cape Girardeau County', 'Mississippi County', 'Cleveland County', 'DeKalb County', 'Schuyler County', 'Mackinac County', 'Finney County', 'Montgomery County', 'Cheyenne County', 'Martin County', 'Garden County', 'Macoupin County', 'Ross County', 'Whiteside County', 'Washington County', 'Howell County', 'Edwards County', 'Logan County', 'Winnebago County', 'Harvey County', 'Midland County', 'Jefferson County', 'Hamlin County', 'Lincoln County', 'Lawrence County', 'Howard County', 'Pike County', 'Eaton County', 'Wapello County', 'Cass County', 'Sheridan County', 'Edmunds County', 'Dearborn County', 'Jackson County', 'Crittenden County', 'Renville County', 'Henry County', 'Harlan County', 'Pepin County', 'Macon County', 'Kiowa County', 'Daviess County', 'Manistee County', 'Lyon County', 'Adams County', 'Harper County', 'Monona County', 'Peoria County', 'Humboldt County', 'Washington County', 'Iowa County', 'Morrison County', 'Shelby County', 'Madison County', 'Washington County', 'Champaign County', 'Edgar County', 'Hardin County', 'Missaukee County', 'Stutsman County', 'Shannon County', 'Oakland County', 'Golden Valley County', 'Pipestone County', 'Renville County', 'Hooker County', 'Hand County', 'Lafayette County', 'Clermont County', 'Louisa County', 'Elk County', 'Noble County', 'Putnam County', 'Mahnomen County', 'Perry County', 'Hennepin County', 'Tama County', 'Seward County', 'Monroe County', 'Richardson County', 'Christian County', 'Oliver County', 'Osceola County', 'Dade County', 'Muscatine County', 'Martin County', 'Scotland County', 'Nemaha County', 'Norton County', 'Furnas County', 'Wayne County', 'Howard County', 'Dunn County', 'Coffey County', 'Branch County', 'Meigs County', 'Spink County', 'Valley County', 'Saline County', 'Rolette County', 'Allegan County', 'Brown County', 'Shelby County', 'Franklin County', 'Keweenaw County', 'Kearny County', 'Monroe County', 'Lucas County', 'Nicollet County', 'Marinette County', 'Price County', 'Miami County', 'Ellsworth County', 'Hodgeman County', 'Meade County', 'Faulk County', 'Houghton County', 'Butte County', 'Madison County', 'Putnam County', 'Putnam County', 'Grant County', 'Morton County', 'Meade County', 'Marion County', 'Chicot County', 'Pope County', 'Marion County', 'St. Francois County', 'Clinton County', 'Prairie County', 'Bradley County', 'Douglas County', 'Huron County', 'Wood County', 'Anderson County', 'Knox County', 'McPherson County', 'Charlevoix County', 'Swift County', 'Seneca County', 'Williams County', 'Union County', 'Cuyahoga County', 'Oglala Lakota County', 'Marshall County', 'Wichita County', 'Charles Mix County', 'Cedar County', 'McHenry County', 'Carroll County', 'Steele County', 'Thayer County', 'Hamilton County', 'Warren County', 'Vernon County', 'Parke County', 'Franklin County', 'Fairfield County', 'Pierce County', 'Carroll County', 'Red Lake County', 'Union County', 'Knox County', 'Bremer County', 'Deuel County', "O'Brien County", 'Grant County', 'Drew County', 'Morrill County', 'Benton County', 'Pike County', 'Dent County', 'Leavenworth County', 'Muskegon County', 'St. Clair County', 'Mercer County', 'Pettis County', 'Chautauqua County', 'Whitley County', 'Day County', 'DeKalb County', 'Edwards County', 'Licking County', 'Union County', 'Henderson County', 'Columbia County', 'Clearwater County', 'Rooks County', 'Fayette County', 'Hall County', 'Hamilton County', 'Loup County', 'Frontier County', 'Big Stone County', 'Blue Earth County', 'Delta County', 'Sebastian County', 'Dunklin County', 'Monroe County', 'Isabella County', 'Clark County', 'Adams County', 'Tripp County', 'Guthrie County', 'Washington County', 'Sanborn County', 'St. Croix County', 'Summit County', 'Washington County', 'Lawrence County', 'Eddy County', 'Juneau County', 'Corson County', 'Gregory County', 'Blackford County', 'Reno County', 'Rusk County', 'Waukesha County', 'Hendricks County', 'Jackson County', 'Hettinger County', 'Buffalo County', 'Polk County', 'Redwood County', 'Poinsett County', 'Shelby County', 'Lawrence County', 'Gray County', 'Pemiscot County', 'Nance County', 'Menominee County', 'Sioux County', 'St. Louis city', 'Grant County', 'Marshall County', 'Knox County', 'Allamakee County', 'Wabaunsee County', 'Houston County', 'Medina County', 'Manitowoc County', 'Door County', 'Gallia County', 'Coshocton County', 'Perkins County', 'Winnebago County', 'Wyandot County', 'Carver County', 'Colfax County', 'Bates County', 'Ida County', 'Sedgwick County', 'Butler County', 'Cass County', 'Mercer County', 'Jackson County', 'Cherry County', 'New Madrid County', 'Hempstead County', 'Camden County', 'Lenawee County', 'Roseau County']
 /*initiate the autocomplete function on the "myInput" element, and pass along the countries array as possible autocomplete values:*/
-autocomplete(document.getElementById("locationInput"), locations);
+// autocomplete(document.getElementById("locationInput"), locations);
 autocomplete(document.getElementById("plotCountyIn"), locations);
 function autocomplete(inp, arr) {
     /*the autocomplete function takes two arguments,
@@ -652,7 +787,8 @@ function applySetting() {
         curMap.removeControl(curLegend);
     }
 
-    curLocation = document.getElementById("locationInput").value;
+    // curLocation = document.getElementById("locationInput").value;
+    curLocation = ''
     curCrop = document.getElementById("cropInput").value; // 'corn' or 'soybean'
     curYear = document.getElementById("yearInput").value; // 2010-2021
     curMonth = document.getElementById("monthInput").value; // 0-9
@@ -661,7 +797,7 @@ function applySetting() {
     //call getData function
     getData(curMap, curCrop, curYear, curMonth, curLocation);
 
-    scatterGen("edit");
+    // scatterGen("");
 }
 
 $(document).ready(createMap);
@@ -683,7 +819,7 @@ function downloadFunc(divID){
             link.click();
         });
 }
-
+/**
 function downloadPDFFunc(divID){
     const doc = new jspdf.jsPDF()
     doc.html(document.getElementById('report'), {
@@ -698,8 +834,10 @@ function downloadPDFFunc(divID){
     })
 
 }
+**/
 
 function downloadData(){
+    applySetting()
     switch( document.getElementById("dataDownFormat").value ){
         case 'csv':
             let t = curResponse.features.map(d=>
@@ -723,7 +861,7 @@ function downloadData(){
             url = window.URL.createObjectURL(blob)
             var link = document.createElement("a");
             link.setAttribute("href", url);
-            link.setAttribute("download", "my_data.csv");
+            link.setAttribute("download", "prediction_"+curCrop+"_"+curYear+"_"+curMonth+".csv");
             document.body.appendChild(link); // Required for FF
 
             link.click();
@@ -771,19 +909,38 @@ $(document).ready(function (){
     })
 })
 
-function plotFunc(){
+/**
+ *
+ * @param mode 'new' or 'update'
+ */
+function plotFunc(mode='new'){
+
 
     var thisFIPS;
     var d = d3.csv("data/county.csv", function (data){
         thisFIPS = data.filter(function (row) {
             if (Number(row["STATEFP"]) === Number($("#plotStateIn").val()) && row["NAMELSAD"]===$("#plotCountyIn").val() ) {
-                curFIPS = row["STATEFP"]
+                curFIPS = row.GEOID
                 curLocation = row["NAMELSAD"]
                 document.getElementById("reportTitle").innerHTML = "Historical Yield of "+curLocation
-                scatterGen("scatterP",Number(row.GEOID))
+                scatterGen("scatterP",Number(row.GEOID),mode)
                 return row.GEOID;
             }
     })
+        console.log(curFIPS)
+        if(highlightedLayers.length==0){
+            curMap.eachLayer(function (layer) {
+                if (Object.hasOwn(layer, "feature")
+                    && Object.hasOwn(layer.feature, "properties")) {
+                    // console.log(layer.feature.properties.FIPS)
+                    if (layer.feature.properties.FIPS !== undefined
+                        && (layer.feature.properties.FIPS).toString() ===  (curFIPS).toString()) {
+                        layer.fireEvent('click')
+                        console.log("clicked")
+                    }
+                }
+            })
+        }
     return thisFIPS
     })
 
@@ -796,7 +953,7 @@ function plotFunc(){
  * @param plotDivID the DIV element ID (e.g., "scatterP") that plot append to. It will clear previous plots upon calling
  * @param fispIn FIPS code (as number) of the county
  */
-function scatterGen(plotDivID,fipsIn){
+function scatterGen(plotDivID,fipsIn,mode='new'){
     var cornYield = d3.csv("data/corn_yield_US.csv", function(data) {
         var county = data.filter(function (row) {
             if (Number(row["FIPS"]) === fipsIn) {
@@ -818,13 +975,15 @@ function scatterGen(plotDivID,fipsIn){
             return o.year;
         }))
 
+
         const statDiv = document.getElementById("statistics")
         let yieldMean = (county.reduce((a,b)=>a.yield+b.yield,0)/county.length)||0
 
         yieldMean = county.reduce(function(p,c,i){return p+(c.yield-p)/(i+1)},0).toFixed(2);
 
-        statDiv.innerText = "Maximum yield: "+ymax.toFixed(2).toString()+"\r\n"+
-            "Minimum yield: "+ymin.toFixed(2).toString()+"\r\n"+
+
+        let statText = "Maximum yield: "+ymax.toFixed(2).toString()+"<br>"+
+            "Minimum yield: "+ymin.toFixed(2).toString()+"<br>"+
             "Average yearly yield: "+yieldMean+""
 
         // set the dimensions and margins of the graph
@@ -836,8 +995,16 @@ function scatterGen(plotDivID,fipsIn){
             },
             width = 325 - margin.left - margin.right,
             height = 220 - margin.top - margin.bottom;
+        if(mode==='new'){
+            document.getElementById(plotDivID).innerHTML = ""
+            statDiv.innerHTML=statText
+        }else {
+            const a = document.createElement('div')
+                a.innerHTML= statText
+            document.getElementById(plotDivID).appendChild(a)
+        }
 
-        document.getElementById(plotDivID).innerHTML = "";
+
         // append the svg object to the body of the page
         var svg = d3.select("#"+plotDivID)
             .append("svg")
@@ -860,6 +1027,14 @@ function scatterGen(plotDivID,fipsIn){
             .call(d3.axisBottom(x).tickSizeOuter(0))
             .call(d3.axisBottom(x).tickValues(d3.range(xmin, xmax, 10)))
         //     .selectAll("text").remove()
+
+        svg.append("text")
+            .attr("x",80)
+            .attr("y",10)
+            .attr("fill", "black")
+            .style("text-anchor", "middle")
+            .style("font", "16px verdana")
+            .text(curLocation)
 
         // text label for the x axis
         svg.append("text")
@@ -911,12 +1086,37 @@ function scatterGen(plotDivID,fipsIn){
             .append("title")
             .text(d=>d.year+": "+d.yield)
 
+            .exit()
+
+        svg.append('g')
+            .selectAll("dot")
+            .data(avePred.filter(function(d) { return d.CROP ===(curCrop=='corn'?'c':'s') && d.FIPS==curFIPS }))
+            .enter()
+            .append("circle")
+            .attr("cx", function (d) {
+                return x(d.YEAR);
+            })
+            .attr("cy", function (d) {
+                return y(d.PRED);
+            })
+            .attr("r", 4)
+            .style("fill", "#15559f")
+
+            .append("title")
+            .text(d=>"Prediction: \n"+d.YEAR+": "+d.PRED)
+
+
+
         d3.selectAll("circle")
             .on("mouseover",function (d){
-                d3.select(this).style("fill",'red').attr("r",6)
+                d3.select(this).style("stroke", "black").style("stroke-width", 2)
             })
             .on("mouseout",function (d){
-                d3.select(this).style("fill", "#69b3a2").attr('r',4)
+                d3.select(this).style("stroke", "none")
             })
     })
+}
+
+function plotPredicted(filename,variable){
+
 }
