@@ -43,7 +43,15 @@ var curDate = {
 }
 
 let avePred;
-var drawnFeatures = new L.FeatureGroup();
+let drawnFeatures = new L.FeatureGroup();
+let drawnFeaturesDict = {};
+function DrawnFeature(id,layer,type,intersectCounty,intersectFIPS){
+    this.id = id;
+    this.layer = layer;
+    this.type = type;
+    this.intersectCounty = intersectCounty;
+    this.intersectFIPS = intersectFIPS;
+}
 d3.csv("data/average_pred.csv", function(data) {
     avePred= data;
 })
@@ -76,50 +84,147 @@ function createMap(){
     //call getData function
     getData(curMap, curCrop, curYear, curMonth, curLocation);
 
-    // // leaflet draw control
-    // map.addLayer(drawnFeatures);
-    // var drawControl = new L.Control.Draw({
-    //     edit: {
-    //         featureGroup: drawnFeatures },
-    //     position: 'bottomright',
-    //     draw: {
-    //         polygon: {
-    //             shapeOptions: {
-    //                 color: 'purple'
-    //             },
-    //             //  allowIntersection: false,
-    //             //  drawError: {
-    //             //   color: 'orange',
-    //             //   timeout: 1000
-    //             //  },
-    //         },
-    //         polyline: {
-    //             shapeOptions: {
-    //                 color: 'red'
-    //             },
-    //         },
-    //         rect: {
-    //             shapeOptions: {
-    //                 color: 'green'
-    //             },
-    //         },
-    //         circle: {
-    //             shapeOptions: {
-    //                 color: 'steelblue'
-    //             },
-    //         },
-    //     },
-    // });
-    // map.addControl(drawControl);
+    // leaflet draw control
+    map.addLayer(drawnFeatures);
+    var drawControl = new L.Control.Draw({
+        edit: {
+            featureGroup: drawnFeatures },
+        position: 'bottomright',
+        draw: {
+            polygon: {
+                shapeOptions: {
+                    color: 'purple'
+                },
+                //  allowIntersection: false,
+                //  drawError: {
+                //   color: 'orange',
+                //   timeout: 1000
+                //  },
+            },
+            polyline: {
+                shapeOptions: {
+                    color: 'red'
+                },
+            },
+            rect: {
+                shapeOptions: {
+                    color: 'green'
+                },
+            },
+            // circle: {
+            //     shapeOptions: {
+            //         color: 'steelblue'
+            //     },
+            // },
+        },
+    });
+    map.addControl(drawControl);
     // console.log("drawControl");
-    //
-    // map.on('draw:created', function (e) {
-    //     var type = e.layerType;
-    //     var layer = e.layer;
-    //     console.log(e);
-    //     drawnFeatures.addLayer(layer);
-    // });
 
+    map.on('draw:created', function (e) {
+        var type = e.layerType;
+        var layer = e.layer;
+        console.log(type);
+        drawnFeatures.addLayer(layer);
+        // $("#drawnFeaturesList").append("<li>Drawn Feature</li>");
+
+        let drawnPolygon = layer.toGeoJSON(); // not necessarily polygon
+        let intersectCounty = [];
+        let intersectFIPS = [];
+        // Iterate over the GeoJSON polygon layers
+        curLayer.eachLayer(function (layer) {
+
+            if(turf.booleanIntersects(layer.toGeoJSON(), drawnPolygon)){
+              intersectCounty.push(layer.feature.properties.NAMELSAD);
+              intersectFIPS.push(layer.feature.properties.FIPS);
+            }
+        })
+        drawnFeaturesDict[layer._leaflet_id] = new DrawnFeature(layer._leaflet_id,layer,type,intersectCounty,intersectFIPS);
+        updateDrawnFeaturesDict()
+    });
+
+
+
+    map.on('draw:edit', function (e) {
+        updateDrawnFeaturesDict()
+    });
+
+    map.on('draw:deleted', function (e) {
+        // layer groups
+        let removedIDs = []
+        e.layers.eachLayer( (layer)=>removedIDs.push(layer._leaflet_id) );
+        removedIDs.forEach(id=>delete drawnFeaturesDict[id]);
+        drawnFeatures.removeLayer(e.layers);
+        updateDrawnFeaturesDict()
+    })
+}
+
+function updateDrawnFeaturesDict(){
+
+
+
+    function upperInitial(str) {if (str.length === 0) {return str;} const firstChar = str.charAt(0).toUpperCase();const restOfString = str.slice(1);return firstChar + restOfString;}
+    num = 1;
+    $("#drawnFeaturesList").empty();
+    for (const [key, value] of Object.entries(drawnFeaturesDict)) {
+        let msg = "<li>" +num+". "+ upperInitial(value.type) +"     <button onclick='fitBoundsByID("+key.toString()+")'"  +">GO</button>"  +"</li>";
+        msg+= "<ul>";
+        msg += "Selected locations: ";
+        msg += value.intersectCounty.join(", ");
+        $("#drawnFeaturesList").append(msg);
+        msg = "<button onclick='downloadByDrawnFeature("+key.toString()+")'"  +">Download</button>";
+        $("#drawnFeaturesList").append(msg);
+        num++;
+    }
+}
+
+function downloadByDrawnFeature(id){
+    FIPS = drawnFeaturesDict[id].intersectFIPS;
+    if(FIPS.length === 0){
+        alert("No county selected");
+        return;
+    }
+    let data = curResponse.features.filter(d=>FIPS.includes(d.properties.FIPS));
+    // let filename = "data_"+Date.now()+".json";
+    // let dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(data));
+    // let downloadAnchorNode = document.createElement('a');
+    // downloadAnchorNode.setAttribute("href", dataStr);
+    // downloadAnchorNode.setAttribute("download", filename);
+    // document.body.appendChild(downloadAnchorNode); // required for firefox
+    // downloadAnchorNode.click();
+    // downloadAnchorNode.remove();
+    let t = data.map(d=>
+        d={NAME:d.properties.NAME,
+            FIPS:d.properties.FIPS,
+            YIELD:d.properties.yield,
+            PREDICTION:d.properties.pred,
+            ERROR:d.properties.error})
+    let csvRows = [];
+    const headers = Object.keys(t[0]);
+    csvRows.push(headers.join(','));
+    for (const row of t) {
+        const values = headers.map(e => {
+            return row[e]
+        })
+        csvRows.push(values.join(','))
+    }
+    csvRows = csvRows.join('\n')
+
+    blob = new Blob([csvRows], { type: 'text/csv' });
+    url = window.URL.createObjectURL(blob)
+    var link = document.createElement("a");
+    link.setAttribute("href", url);
+    link.setAttribute("download", "prediction_"+curCrop+"_"+curYear+"_"+curMonth+".csv");
+    document.body.appendChild(link); // Required for FF
+
+    link.click();
+    link.remove();
+
+}
+
+function fitBoundsByID(id){
+    layer = drawnFeatures.getLayer(id)
+    curMap.fitBounds(layer.getBounds())
 }
 
 function changeBaseMap(){

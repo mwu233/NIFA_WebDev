@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width", initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Crop Yield Prediction Map</title>
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.6.0/dist/leaflet.css" integrity="sha512-xwE/Az9zrjBIphAcBb3F6JVqxf46+CDLwfLMHloNu6KEQCAWi6HcDUbeOfBIptF7tcCzusKFjFw2yuvEpDL9wQ==" crossorigin="" />
-    <link href="https://maxcdn.bootstrapcdn.com/font-awesome/4.1.0/css/font-awesome.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" rel="stylesheet">
     <link rel="stylesheet" href="//code.jquery.com/ui/1.12.1/themes/base/jquery-ui.css">
 <!--    <link rel="stylesheet" href="css/leaflet-control-bar.css" />-->
     <link rel="stylesheet" href="css/leaflet-sidebar.css" />
@@ -19,20 +19,20 @@
         <!-- Nav tabs -->
         <div class="sidebar-tabs">
             <ul role="tablist">
-                <li><a href="#home" role="tab" title="Project Introduction."><i class="fa fa-bars fa-2x"></i></a></li>
-                <li><a href="#info" role="tab" title="Website usage."><i class="fa fa-info fa-2x"></i></a></li>
+                <li><a href="#home" role="tab" title="Project Introduction."><i class="fa-solid fa-bars fa-lg"></i></a></li>
+                <li><a href="#info" role="tab" title="Website usage."><i class="fa-solid fa-circle-info fa-lg"></i></a></li>
 <!--                <li class="disabled"><a href="#messages" role="tab"><i class="fa fa-envelope"></i></a></li>-->
-                <li><a href="#filter" role="tab" title="Crop yield predictions based on location(county), crop type, date and attribute. &#10;&#13;Also can download data of certain date to csv, Geojson or shapefile."><i class="fa fa-filter fa-2x"></i></a></li>
-                <li><a href="#edit" role="tab" title="Historical crop yield by search for county name. Generate interactive scatter plots and download reports."><i class="fa fa-edit fa-2x"></i></a></li>
-                <li><a href="#download" role="tab" title="Download research data."><i class="fa fa-download fa-2x"></i></a></li>
+                <li><a href="#filter" role="tab" title="Crop yield predictions based on location(county), crop type, date and attribute. &#10;&#13;Also can download data of certain date to csv, Geojson or shapefile."><i class="fa-solid fa-filter fa-lg"></i></a></li>
+                <li><a href="#edit" role="tab" title="Historical crop yield by search for county name. Generate interactive scatter plots and download reports."><i class="fa-solid fa-pen-to-square fa-lg"></i></a></li>
+                <li><a href="#download" role="tab" title="Download research data."><i class="fa-solid fa-file-arrow-down fa-lg"></i></a></li>
 <!--                <li><a href="#save" role="tab"><i class="fa fa-save fa-2x"></i></a></li>-->
-
-                <li><a href="#basemap" role="tab" title="Change base map used for visualization."><i class="fa fa-globe fa-2x"></i></a></li>
+                <li><a href="#drawn" role="tab" title="Drawn Features"><i class="fa-regular fa-object-ungroup fa-lg"></i> </a> </li>
+                <li><a href="#basemap" role="tab" title="Change base map used for visualization."><i class="fa-solid fa-globe fa-lg"></i></a></li>
             </ul>
 
             <ul role="tablist">
-                <li><a href="#profile" role="tab"><i class="fa fa-user fa-2x"></i></a></li>
-                <li><a href="https://github.com/mwu233/NIFA_WebDev" role="tab" target="_blank"><i class="fa fa-github fa-2x"></i></a></li>
+                <li><a href="#profile" role="tab"><i class="fa-solid fa-users fa-lg"></i></a></li>
+                <li><a href="https://github.com/mwu233/NIFA_WebDev" role="tab" target="_blank"><i class="fa-brands fa-github fa-lg"></i></a></li>
 <!--                <li><a href="#settings" role="tab"><i class="fa fa-gear fa-2x"></i></a></li>-->
             </ul>
         </div>
@@ -263,6 +263,15 @@
 <!--                    Download Current Map View</button>-->
 <!--                <div id="testdiv"></div>-->
 <!--            </div>-->
+            <div class="sidebar-pane" id="drawn">
+                <h1 class="sidebar-header">Drawn Features<span class="sidebar-close"><i class="fa-solid fa-caret-left fa-lg"></i></span></h1>
+                <div id="drawnFeatures">
+                    <h3 style="margin-bottom:0px;margin-top: 5px;margin-left: 0px;">
+                        Drawn Features:
+                    </h3>
+                    <div id="drawnFeaturesList" style="margin-bottom:5px;margin-top: 10px;margin-left: 0px;"></div>
+                </div>
+            </div>
             <div class="sidebar-pane" id="settings">
                 <h1 class="sidebar-header">Settings<span class="sidebar-close"><i class="fa fa-caret-left"></i></span></h1>
             </div>
@@ -294,5 +303,6 @@
     <script src="https://unpkg.com/jspdf@latest/dist/jspdf.umd.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet.draw/0.4.2/leaflet.draw.js"></script>
     <script src="https://html2canvas.hertzen.com/dist/html2canvas.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@turf/turf@6/turf.min.js"></script>
 </body>
 </html>
