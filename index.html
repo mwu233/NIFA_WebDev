@@ -12,8 +12,10 @@
     <link rel="stylesheet" href="css/style.css">
     <!-- leaflet draw plugin -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet.draw/0.4.2/leaflet.draw.css"/>
+    <link rel="stylesheet" href="css/Leaflet.BigImage.min.css">
+
 </head>
-<body>
+<body >
 
     <div id="sidebar" class="sidebar collapsed">
         <!-- Nav tabs -->
@@ -254,7 +256,7 @@
                 <p><a href="https://github.com/mwu233/NIFA_WebDev/tree/main/data" role="tab" target="_blank">Download Prediction Results</a></p>
                 <p><a href="https://github.com/mwu233/NIFA_WebDev/tree/main/data" role="tab" target="_blank">Download Variables</a></p>
                 <p> </p>
-                <button class="btn" style="background:#3630a3;color:white;" onclick="downloadFunc('map')">
+                <button class="btn" style="background:#3630a3;color:white;" onclick="downloadFunc('mapid')">
                     Download Current Map View</button>
             </div>
 <!--            <div class="sidebar-pane" id="save">-->
@@ -279,17 +281,19 @@
     </div>
 
     <div id="bar" class="topnav">
-        <a class="active" >&nbsp&nbsp Crop Yield Prediction &nbsp&nbsp</a>
-<!--        <a href="#about">About</a>-->
-<!--        <a href="#help">Help</a>-->
-<!--        <a href="#publications">Publications</a>-->
-<!--        <a href="#documentation">Documentation</a>-->
+        <a class="active">&nbsp&nbsp Crop Yield Prediction &nbsp&nbsp</a>
+<!--&lt;!&ndash;        <a href="#about">About</a>&ndash;&gt;-->
+<!--&lt;!&ndash;        <a href="#help">Help</a>&ndash;&gt;-->
+<!--&lt;!&ndash;        <a href="#publications">Publications</a>&ndash;&gt;-->
+<!--&lt;!&ndash;        <a href="#documentation">Documentation</a>&ndash;&gt;-->
     </div>
-    <div id="map"></div>
-
+    <div id = "mapid">
+        <div id="map"></div>
+    </div>
     <script src="https://unpkg.com/leaflet@1.6.0/dist/leaflet.js" integrity="sha512-gZwIG9x3wUXg2hdXF6+rVkLF/0Vi9U8D2Ntg4Ga5I5BZpVkVxlJWbSQtXPSiUTtC0TjtGOmxa1AJPuV0CPthew==" crossorigin=""></script>
     <script type="text/javascript" src="lib/jquery-3.3.1.js"></script>
-    <script type="text/javascript" src="lib/dom-to-image-more.min.js"></script>
+    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/dom-to-image-more/3.3.0/dom-to-image-more.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/dom-to-image-more/3.3.0/dom-to-image-more.min.js.map"></script>
     <script src="https://code.jquery.com/jquery-1.12.4.js"></script>
     <script src="https://code.jquery.com/ui/1.12.1/jquery-ui.js"></script>
     <script type="text/javascript" src="lib/leaflet/leaflet-src.js"></script>
@@ -297,7 +301,7 @@
     <script type="text/javascript" src="lib/leaflet-sidebar.js"></script>
     <script type="text/javascript" src="lib/d3.v4.js"></script>
     <script type="text/javascript" src="js/main.js"></script>
-    <script src="lib/dom-to-image-more.min.js"></script>
+
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/canvg/1.1/canvg.js"></script>
     <script src="https://unpkg.com/jspdf@latest/dist/jspdf.umd.min.js"></script>

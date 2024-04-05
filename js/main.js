@@ -74,6 +74,10 @@ function createMap(){
         maxZoom: 19,
     }).addTo(curMap);
 
+    L.control.scale()
+        .setPosition('bottomright')
+        .addTo(map);
+
 
     curCrop = 'corn'; // or 'soybean'
     curYear = '2021'; // 2010-2021
@@ -788,6 +792,7 @@ function createLegend(map){
     curLegend.addTo(map);
 }
 
+
 function createSideMenu(map) {
     var sidebar = L.control.sidebar('sidebar').addTo(map);
 }
@@ -939,20 +944,45 @@ $(document).ready(createMap);
 
 //Map download functions :
 function filter(node) {
-    if (node.classList) return ( !node.classList.contains("leaflet-top") && !node.classList.contains("leaflet-left") );
+    if (node.classList) return ( !node.classList.contains("leaflet-bottom") && !node.classList.contains("leaflet-left") && !node.classList.contains("topnav") );
     return true;
 }
 
 function downloadFunc(divID){
-    // var testDiv = document.getElementById("testdiv");
+    let heading;
+    if (divID === 'mapid'){
+        const bigDiv = document.getElementById('mapid')
+        heading = document.createElement("div")
+        heading.className = "heading"
+        heading.innerHTML = "<h3>Crop Yield Prediction Map</h3>"+
+            "Crop Type: "+(curCrop==="corn"?"Corn":"Soybean")+"&nbsp;&nbsp; Year: "+curYear+"  &nbsp;&nbsp;    Date: "+curDate[curMonth]+""
+        bigDiv.insertBefore(heading, bigDiv.firstChild)
+
+        curLegend.setPosition('topright')
+        curInfo.setPosition('bottomright')
+    }
+
     domtoimage
         .toJpeg(document.getElementById(divID), { filter:filter })
+        // .toJpeg(document.getElementById(divID))
         .then(function (dataUrl) {
+
             var link = document.createElement('a');
             link.download = 'download.jpeg';
             link.href = dataUrl;
             link.click();
+
+            if(heading){
+                heading.remove()
+                curLegend.setPosition('bottomright')
+                curInfo.setPosition('topright')
+            }
         });
+
+
+
+
+
 }
 /**
 function downloadPDFFunc(divID){
@@ -1063,7 +1093,7 @@ function plotFunc(mode='new'){
             }
     })
         console.log(curFIPS)
-        if(highlightedLayers.length==0){
+        if(highlightedLayers.length===0){
             curMap.eachLayer(function (layer) {
                 if (Object.hasOwn(layer, "feature")
                     && Object.hasOwn(layer.feature, "properties")) {
@@ -1253,5 +1283,9 @@ function scatterGen(plotDivID,fipsIn,mode='new'){
 }
 
 function plotPredicted(filename,variable){
+
+}
+
+function captureAndDownloadWindow() {
 
 }
