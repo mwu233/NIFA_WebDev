@@ -950,16 +950,47 @@ function filter(node) {
 
 function downloadFunc(divID){
     let heading;
+    const mapdiv = document.getElementById('map');
     if (divID === 'mapid'){
         const bigDiv = document.getElementById('mapid')
         heading = document.createElement("div")
         heading.className = "heading"
-        heading.innerHTML = "<h3>Crop Yield Prediction Map</h3>"+
+
+        userTitile = document.getElementById("userTitle").value
+        console.log(userTitile)
+        heading.innerHTML =  (userTitile===''?"<h3>Crop Yield Prediction Map</h3>":("<h3>"+userTitile+"</h3>") )+
             "Crop Type: "+(curCrop==="corn"?"Corn":"Soybean")+"&nbsp;&nbsp; Year: "+curYear+"  &nbsp;&nbsp;    Date: "+curDate[curMonth]+""
+        +"<br> Description: "+document.getElementById("userDescription").value
         bigDiv.insertBefore(heading, bigDiv.firstChild)
+        heading.style.backgroundColor = document.getElementById("colorPicker").value;
+        var selectedFont = document.getElementById("fontSelect").value;
+
+        switch (selectedFont) {
+            case "Arial":
+                heading.style.fontFamily = "Arial, sans-serif";
+                break;
+            case "Times New Roman":
+                heading.style.fontFamily = "Times New Roman, serif";
+                break;
+            case "Verdana":
+                heading.style.fontFamily = "Verdana, sans-serif";
+                break;
+            case "Helvetica":
+                heading.style.fontFamily = "Helvetica, sans-serif";
+                break;
+            case "Georgia":
+                heading.style.fontFamily = "Georgia, serif";
+                break;
+            default:
+                heading.style.fontFamily = "Arial, sans-serif";
+        }
 
         curLegend.setPosition('topright')
         curInfo.setPosition('bottomright')
+
+        mapdiv.style.width = '95vw'
+        mapdiv.style.height = '95vh'
+
     }
 
     domtoimage
@@ -977,6 +1008,9 @@ function downloadFunc(divID){
                 curLegend.setPosition('bottomright')
                 curInfo.setPosition('topright')
             }
+            mapdiv.style.width = '100vw'
+            mapdiv.style.height = '100vh'
+
         });
 
 

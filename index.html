@@ -256,6 +256,32 @@
                 <p><a href="https://github.com/mwu233/NIFA_WebDev/tree/main/data" role="tab" target="_blank">Download Prediction Results</a></p>
                 <p><a href="https://github.com/mwu233/NIFA_WebDev/tree/main/data" role="tab" target="_blank">Download Variables</a></p>
                 <p> </p>
+                <div id="inputPanel">
+                    <div>
+                        <label for="userTitle"  style="margin-bottom:0px;margin-top: 5px;" >Title:</label>
+                        <br>
+                        <input type="text" class="input" id="userTitle" style="margin-bottom:0px;margin-top: 5px;" >
+                    </div>
+                    <div>
+                        <label for="userDescription" style="margin-bottom:5px;margin-top: 5px;">Description:</label>
+                        <br>
+                        <textarea type="text" class="input" id="userDescription" style="margin-bottom:5px;margin-top: 5px;white-space: pre" rows="10" cols="35"></textarea>
+                    </div>
+                    <div>
+                        <label for="fontSelect" style="margin-bottom:5px;margin-top: 5px;">Font:</label>
+                        <select id="fontSelect">
+                            <option value="Arial">Arial</option>
+                            <option value="Verdana">Verdana</option>
+                            <option value="Helvetica">Helvetica</option>
+                            <option value="Times New Roman">Times New Roman</option>
+                            <option value="Georgia">Georgia</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label for="colorPicker" style="margin-bottom:5px;margin-top: 5px;">Background Color:</label>
+                        <input type="color" id="colorPicker" value="#ffffff" style="margin-bottom:15px;margin-top: 5px;">
+                    </div>
+                </div>
                 <button class="btn" style="background:#3630a3;color:white;" onclick="downloadFunc('mapid')">
                     Download Current Map View</button>
             </div>
