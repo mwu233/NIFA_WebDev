@@ -43,6 +43,7 @@ var curDate = {
 }
 
 let avePred;
+let drawControl;
 let drawnFeatures = new L.FeatureGroup();
 let drawnFeaturesDict = {};
 function DrawnFeature(id,layer,type,intersectCounty,intersectFIPS){
@@ -61,6 +62,8 @@ function createMap(){
     var map = L.map('map', {
         center: [43,-93],
         zoom: 5.5,
+        zoomDelta: 0.25,
+        zoomSnap: 0,
         zoomControl: false,
         maxBounds: [[20,-130],[52,-60]],
         maxBoundsViscosity: 1.0,
@@ -74,10 +77,9 @@ function createMap(){
         maxZoom: 19,
     }).addTo(curMap);
 
-    L.control.scale()
+    const scaleControl = L.control.scale()
         .setPosition('bottomright')
         .addTo(map);
-
 
     curCrop = 'corn'; // or 'soybean'
     curYear = '2021'; // 2010-2021
@@ -90,7 +92,7 @@ function createMap(){
 
     // leaflet draw control
     map.addLayer(drawnFeatures);
-    var drawControl = new L.Control.Draw({
+    drawControl = new L.Control.Draw({
         edit: {
             featureGroup: drawnFeatures },
         position: 'bottomright',
@@ -146,8 +148,6 @@ function createMap(){
         drawnFeaturesDict[layer._leaflet_id] = new DrawnFeature(layer._leaflet_id,layer,type,intersectCounty,intersectFIPS);
         updateDrawnFeaturesDict()
     });
-
-
 
     map.on('draw:edit', function (e) {
         updateDrawnFeaturesDict()
@@ -604,8 +604,6 @@ function highlightFeature(e) {
     highlightHelper(e)
 }
 
-
-
 function resetHighlight(e) {
     if(doubleClicked) return
 
@@ -792,7 +790,6 @@ function createLegend(map){
     curLegend.addTo(map);
 }
 
-
 function createSideMenu(map) {
     var sidebar = L.control.sidebar('sidebar').addTo(map);
 }
@@ -948,11 +945,128 @@ function filter(node) {
     return true;
 }
 
+
+function scaleBar(){
+// Get the current zoom level of the map
+    var zoomLevel = curMap.getZoom();
+    // console.log(zoomLevel)
+    // Define distance intervals and corresponding reference distances
+    var distanceIntervals = [
+        { minZoom: 0, maxZoom: 2, distance: 5000000 }, // 5000 km
+        { minZoom: 2, maxZoom: 4, distance: 2500000 }, // 2500 km
+        { minZoom: 4, maxZoom: 6, distance: 1250000 }, // 1250 km
+        { minZoom: 6, maxZoom: 8, distance: 500000 },  // 500 km
+        { minZoom: 8, maxZoom: 10, distance: 250000 }, // 250 km
+        { minZoom: 10, maxZoom: 12, distance: 100000 },// 100 km
+        { minZoom: 12, maxZoom: 14, distance: 50000 }, // 50 km
+        { minZoom: 14, maxZoom: 16, distance: 25000 }, // 25 km
+        { minZoom: 16, maxZoom: 22, distance: 10000 }, // 10 km
+        // { minZoom: 19, maxZoom: 20, distance: 5000 },  // 5 km
+        // { minZoom: 21, maxZoom: Infinity, distance: 1000 } // 1 km
+    ];
+
+// Function to get the reference distance based on the zoom level
+    function getReferenceDistance(zoomLevel) {
+        for (var i = 0; i < distanceIntervals.length; i++) {
+            var interval = distanceIntervals[i];
+            if (zoomLevel >= interval.minZoom && zoomLevel <= interval.maxZoom) {
+                return interval.distance;
+            }
+        }
+        return 10000; // Default to 1 km if no matching interval found
+    }
+
+// Get the reference distance based on the zoom level
+    var referenceDistance = getReferenceDistance(zoomLevel);
+
+// Calculate the scale based on the zoom level
+    var scale = 256 * Math.pow(2, zoomLevel)/40075016.686;
+
+// Calculate the pixel distance for the reference distance
+    var pixelDistance = referenceDistance * scale;
+    if(pixelDistance<500){
+        referenceDistance*=2
+        pixelDistance*=2
+    }
+    // Define a scaling factor to reduce the size of the scale bar
+    var scalingFactor = 0.2;
+
+
+    // Create an SVG element for the scale bar
+    var svg = d3.create("svg")
+        .attr("class", "scale-bar")
+        .attr("width", pixelDistance * scalingFactor * +30)
+        .attr("height", 50);
+
+    // Draw the scale bar
+    svg.append("rect")
+        .attr("width", pixelDistance * scalingFactor)
+        .attr("height", 5)
+        .attr('x', 5)
+        .attr('y', 10)
+        .attr("fill", "black");
+
+    // Add labels to the scale bar
+    svg.append("text")
+        .attr("x", pixelDistance * scalingFactor-8)
+        .attr("y", 34)
+        .attr("text-anchor", "right")
+        .text(referenceDistance / 1000 * scalingFactor + " km");
+
+    svg.append("text")
+        .attr("x", 5)
+        .attr("y", 34)
+        .attr("text-anchor", "left")
+        .text("0");
+
+    // Add ticks to the scale bar
+    var numTicks = 5;
+    var tickSpacing = (pixelDistance * scalingFactor) / numTicks;
+    for (var i = 0; i <= numTicks; i++) {
+        svg.append("line")
+            .attr("x1", 5 + i * tickSpacing)
+            .attr("y1", 3)
+            .attr("x2", 5+ i * tickSpacing)
+            .attr("y2", 10)
+            .attr("stroke", "black")
+            .attr("stroke-width", 1);
+    }
+
+    return svg.node();
+}
+
+function northArrow(){
+    const svg = d3.create("svg");
+
+    svg.append("polygon")
+        .attr("points", "20,20 8,50 20,42")
+        .attr("fill", "white")
+        .attr('stroke','black ')
+        .attr("stroke-width",1)
+
+    svg.append("polygon")
+        .attr("points", "20,20 40,50 20,40")
+        .attr("fill", "black")
+        .attr('stroke','black ')
+        .attr("stroke-width", 1)
+
+    svg.append("text")
+        .attr("x", 20)
+        .attr("y", 18)
+        .attr("text-anchor", "middle")
+        .attr("font-size", "16px")
+        .attr("fill", "black")
+        .text("N");
+
+    return svg.node()
+}
+
 function downloadFunc(divID){
     let heading;
     const mapdiv = document.getElementById('map');
     if (divID === 'mapid'){
         const bigDiv = document.getElementById('mapid')
+
         heading = document.createElement("div")
         heading.className = "heading"
 
@@ -960,9 +1074,28 @@ function downloadFunc(divID){
         console.log(userTitile)
         heading.innerHTML =  (userTitile===''?"<h3>Crop Yield Prediction Map</h3>":("<h3>"+userTitile+"</h3>") )+
             "Crop Type: "+(curCrop==="corn"?"Corn":"Soybean")+"&nbsp;&nbsp; Year: "+curYear+"  &nbsp;&nbsp;    Date: "+curDate[curMonth]+""
-        +"<br> Description: "+document.getElementById("userDescription").value
-        bigDiv.insertBefore(heading, bigDiv.firstChild)
+        +"<br> "+document.getElementById("userDescription").value
+
         heading.style.backgroundColor = document.getElementById("colorPicker").value;
+
+        const leftSVG = northArrow()
+        const rightSVG = scaleBar()
+        // Position the SVG nodes using JavaScript
+        leftSVG.style.position = "absolute";
+        leftSVG.style.left = "30";
+        leftSVG.style.top = "40";
+        // leftSVG.style.transform = "translateY(-50%)";
+
+        rightSVG.style.position = "absolute";
+        // rightSVG.style.right = "-100";
+        rightSVG.style.top = "60";
+        rightSVG.style.left = (window.innerWidth-300)+"px";
+        // rightSVG.style.transform = "translateY(-50%)";
+
+        // Insert the SVG nodes into the heading container
+        heading.insertBefore(leftSVG, heading.firstChild);
+        heading.appendChild(rightSVG);
+
         var selectedFont = document.getElementById("fontSelect").value;
 
         switch (selectedFont) {
@@ -986,10 +1119,12 @@ function downloadFunc(divID){
         }
 
         curLegend.setPosition('topright')
-        curInfo.setPosition('bottomright')
+        curInfo.setPosition('bottomleft')
+        drawControl.setPosition('bottomleft')
+        bigDiv.insertBefore(heading,bigDiv.firstChild)
 
-        mapdiv.style.width = '95vw'
-        mapdiv.style.height = '95vh'
+        mapdiv.style.width = '100%'
+        mapdiv.style.height = '100vh'
 
     }
 
@@ -1005,6 +1140,7 @@ function downloadFunc(divID){
 
             if(heading){
                 heading.remove()
+                drawControl.setPosition('bottomright')
                 curLegend.setPosition('bottomright')
                 curInfo.setPosition('topright')
             }
@@ -1012,10 +1148,6 @@ function downloadFunc(divID){
             mapdiv.style.height = '100vh'
 
         });
-
-
-
-
 
 }
 /**
@@ -1144,7 +1276,6 @@ function plotFunc(mode='new'){
     })
 
 }
-
 
 /**
  * Generates scatter plot under certain div with county and crop chosen
