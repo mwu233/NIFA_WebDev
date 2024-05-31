@@ -165,6 +165,14 @@ function createMap(){
     })
 }
 
+function removeAllDrawn(){
+    drawnFeatures.clearLayers();
+    drawnFeaturesDict = {};
+    document.getElementById("drawnFeaturesList").innerHTML = "";
+
+
+}
+
 function updateDrawnFeaturesDict(){
 
 

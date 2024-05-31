@@ -259,11 +259,10 @@
                 </div>
 
                 <div id="controlButton" style="margin-top: 15px;position: absolute">
-                    <button class="btn apply" onclick="applySetting()" style="margin-left: 15px;">Apply Selections</button>
+                    <button class="btn apply" onclick="applySetting()" style="margin-left: 15px;margin-bottom: 10px">Apply Selections</button>
                 </div>
 
                 <div id="table-view" style="margin-top: 15px">
-                    <span id="close" onclick="this.parentNode.parentNode.remove(); return false;" style="padding: 10px;cursor: move;z-index: 10;background-color: #555555">x</span>
                 </div>
 
                 <select name="dataDownFormat" id="dataDownFormat" style="font-size: 16px; padding: 3px;margin-top: 10px">
@@ -334,6 +333,8 @@
                         Drawn Features:
                     </h3>
                     <div id="drawnFeaturesList" style="margin-bottom:5px;margin-top: 10px;margin-left: 0px;"></div>
+                    <button class="btn" style="background:#42a76f;color:white;" onclick="removeAllDrawn()">
+                        Remove all drawn features</button>
                 </div>
 
                 </div>
