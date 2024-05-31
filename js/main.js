@@ -6,6 +6,7 @@ var curLayer;
 var curMap;
 var curResponse;
 var curAttrs;
+var curTileLayer;
 
 var curLocation;
 var curCrop;
@@ -72,10 +73,11 @@ function createMap(){
     curMap = map;
 
     //add OSM base tilelayer
-    L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
+    curTileLayer = L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
         attribution: '&copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a>',
         maxZoom: 19,
-    }).addTo(curMap);
+    })
+    curTileLayer.addTo(curMap);
 
     const scaleControl = L.control.scale()
         .setPosition('bottomright')
@@ -258,7 +260,8 @@ function changeBaseMap(){
             maxZoom: 16
         })
     };
-    basemaps[$('#basemapInput').val()].addTo(curMap);
+    curTileLayer = basemaps[$('#basemapInput').val()]
+        curTileLayer.addTo(curMap);
 
 }
 
@@ -277,6 +280,7 @@ function getData(map, crop, year, month, location){
             // update global variables curAttrs and curResponse
             curAttrs = attributes;
             curResponse = response;
+            updateTable();
 
             // create initial chart on the left panel with average data
             // createChart(response,attributes);
@@ -380,6 +384,8 @@ function createChoropleth(data, map, attrs, idx){
 
     return geoJsonLayer;
 }
+
+
 
 function waitForElement(){
     if(typeof curMap !== "undefined"){
@@ -780,14 +786,95 @@ function createLegend(map){
             }
         }
 
-
-
-
         return div;
     };
 
     curLegend = legend;
     curLegend.addTo(map);
+}
+
+window.onresize = function(event) {
+    var windowWidth = window.innerWidth;
+    var windowHeight = window.innerHeight;
+
+
+    const legendDiv = document.getElementsByClassName('info legend')[0]
+    const curInfoDiv = document.getElementsByClassName('info')[0]
+
+
+    // 太丑了
+    // var component1Width = windowWidth * 0.2; // 30% of window width
+    // var component1Height = windowHeight * 0.2; // 20% of window height
+    //
+    // var component2Width = windowWidth * 0.2; // 40% of window width
+    // var component2Height = windowHeight * 0.2; // 30% of window height
+    //
+    // legendDiv.style.width = component1Width + 'px';
+    // legendDiv.style.height = component1Height + 'px';
+    //
+    // curInfoDiv.style.width = component2Width + 'px';
+    // curInfoDiv.style.height = component2Height + 'px';
+
+    function checkOverlap(control1, control2) {
+        var rect1 = control1.getContainer().getBoundingClientRect();
+        var rect2 = control2.getContainer().getBoundingClientRect();
+
+        var overlap = !(
+            rect1.right < rect2.left ||
+            rect1.left > rect2.right ||
+            rect1.bottom < rect2.top ||
+            rect1.top > rect2.bottom
+        );
+        return overlap;
+    }
+
+
+    if (checkOverlap(curLegend, curInfo)) {
+        curLegend.getContainer().style.display = 'none';
+        // console.log(legendDiv)
+    } else {
+        curLegend.getContainer().style.display = 'block';
+        if(checkOverlap(curLegend, curInfo)){
+            curLegend.getContainer().style.display = 'none';
+        }
+    }
+
+}
+
+let curTable;
+function toggleTable() {
+    if(!curTable){
+
+        let tableDiv = document.createElement('div');
+        tableDiv.id = 'tablePop';
+        tableDiv.style.width = '300px';
+        tableDiv.style.height = '300px';
+        tableDiv.style.overflow = 'auto';
+        tableDiv.style.position = 'absolute';
+        curTable = L.Draggable(tableDiv).addTo(curMap);
+        curTable.enable();
+        let t = curResponse.features.map(d=>
+            d={NAME:d.properties.NAME,
+                FIPS:d.properties.FIPS,
+                YIELD:d.properties.yield,
+                PREDICTION:d.properties.pred,
+                ERROR:d.properties.error})
+
+        var table = new Tabulator("#tablePop",{
+            data:t,
+            autoColumns: true,
+            height:"280px",
+        })
+
+
+    }
+
+    if(curTable.isOpen()){
+        curTable.close();
+    }
+    else{
+        curTable.open();
+    }
 }
 
 function createSideMenu(map) {
@@ -935,16 +1022,32 @@ function applySetting() {
     getData(curMap, curCrop, curYear, curMonth, curLocation);
 
     // scatterGen("");
+
 }
+
+function updateTable(){
+    let t = curResponse.features.map(d=>
+        d={NAME:d.properties.NAME,
+            FIPS:d.properties.FIPS,
+            YIELD:d.properties.yield,
+            PREDICTION:d.properties.pred,
+            ERROR:d.properties.error})
+
+    var table = new Tabulator("#table-view",{
+        data:t,
+        autoColumns: true,
+        height:"311px",
+    })
+}
+
 
 $(document).ready(createMap);
 
 //Map download functions :
 function filter(node) {
-    if (node.classList) return ( !node.classList.contains("leaflet-bottom") && !node.classList.contains("leaflet-left") && !node.classList.contains("topnav") );
+    if (node.classList) return (  !node.classList.contains("leaflet-left") && !node.classList.contains("topnav") );
     return true;
 }
-
 
 function scaleBar(){
 // Get the current zoom level of the map
@@ -1065,6 +1168,12 @@ function downloadFunc(divID){
     let heading;
     const mapdiv = document.getElementById('map');
     if (divID === 'mapid'){
+        if (!(document.getElementById("baseMapOn").checked)){
+            // console.log("baseMapOff")
+            curTileLayer.getContainer().style.display = 'none'
+        }
+
+
         const bigDiv = document.getElementById('mapid')
 
         heading = document.createElement("div")
@@ -1143,7 +1252,9 @@ function downloadFunc(divID){
                 drawControl.setPosition('bottomright')
                 curLegend.setPosition('bottomright')
                 curInfo.setPosition('topright')
+
             }
+            curTileLayer.getContainer().style.display = 'block'
             mapdiv.style.width = '100vw'
             mapdiv.style.height = '100vh'
 
@@ -1453,4 +1564,8 @@ function plotPredicted(filename,variable){
 
 function captureAndDownloadWindow() {
 
+}
+
+function runModel(){
+    alert("Model started running, it may take a while. Please check the progress later.")
 }

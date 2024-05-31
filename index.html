@@ -13,66 +13,104 @@
     <!-- leaflet draw plugin -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet.draw/0.4.2/leaflet.draw.css"/>
     <link rel="stylesheet" href="css/Leaflet.BigImage.min.css">
+    <link href="https://unpkg.com/tabulator-tables@6.2.1/dist/css/tabulator.min.css" rel="stylesheet">
+    <link rel="stylesheet" type="text/css" href="src/leaflet.css"/>
+    <link rel="stylesheet" type="text/css" href="src/L.Control.ZoomBar.css"/>
 
+
+    <style>
+        .map-export {
+            background-color: white;
+        }
+    </style>
 </head>
+
 <body >
+    <div id="bar" class="topnav">
+    <a class="active">&nbsp&nbsp Crop Yield Prediction &nbsp&nbsp</a>
+    <a href="#profile" role="tab"><i class="fa-solid fa-users fa-lg"></i></a>
+<!--    <a href="https://github.com/mwu233/NIFA_WebDev" role="tab" target="_blank"><i class="fa-brands fa-github fa-lg"></i></a>-->
+    <a href="#tablepop" role="tab"><i class="fa fa-table fa-lg" onclick="toggleTable()"></i></a>
+    <!--&lt;!&ndash;        <a href="#about">About</a>&ndash;&gt;-->
+    <!--&lt;!&ndash;        <a href="#help">Help</a>&ndash;&gt;-->
+    <!--        <a href="#publications">Publications</a>-->
+    <!--        <a href="#documentation">Documentation</a>-->
+    <!--        <a href="index.html">About</a>-->
+    </div>
+
 
     <div id="sidebar" class="sidebar collapsed">
         <!-- Nav tabs -->
         <div class="sidebar-tabs">
             <ul role="tablist">
-                <li><a href="#home" role="tab" title="Project Introduction."><i class="fa-solid fa-bars fa-lg"></i></a></li>
-                <li><a href="#info" role="tab" title="Website usage."><i class="fa-solid fa-circle-info fa-lg"></i></a></li>
+<!--                <li><a href="#home" role="tab" title="Project Introduction."><i class="fa-solid fa-bars fa-lg"></i></a></li>-->
+<!--                <li><a href="#info" role="tab" title="Website usage."><i class="fa-solid fa-circle-info fa-lg"></i></a></li>-->
 <!--                <li class="disabled"><a href="#messages" role="tab"><i class="fa fa-envelope"></i></a></li>-->
-                <li><a href="#filter" role="tab" title="Crop yield predictions based on location(county), crop type, date and attribute. &#10;&#13;Also can download data of certain date to csv, Geojson or shapefile."><i class="fa-solid fa-filter fa-lg"></i></a></li>
-                <li><a href="#edit" role="tab" title="Historical crop yield by search for county name. Generate interactive scatter plots and download reports."><i class="fa-solid fa-pen-to-square fa-lg"></i></a></li>
-                <li><a href="#download" role="tab" title="Download research data."><i class="fa-solid fa-file-arrow-down fa-lg"></i></a></li>
+                <li><a href="#run" role="tab" title="Run Model"><i class="fa-solid fa-play-circle fa-lg"></i></a></li>
+                <li><a href="#search" role="tab" title="Data Search"><i class="fa-solid fa-filter fa-lg"></i></a></li>
+                <li><a href="#visualization" role="tab" title="Visualization"><i class="fa-solid fa-chart-simple fa-lg"></i></a></li>
+<!--                <li><a href="#download" role="tab" title="Download research data."><i class="fa-solid fa-file-arrow-down fa-lg"></i></a></li>-->
 <!--                <li><a href="#save" role="tab"><i class="fa fa-save fa-2x"></i></a></li>-->
-                <li><a href="#drawn" role="tab" title="Drawn Features"><i class="fa-regular fa-object-ungroup fa-lg"></i> </a> </li>
-                <li><a href="#basemap" role="tab" title="Change base map used for visualization."><i class="fa-solid fa-globe fa-lg"></i></a></li>
+<!--                <li><a href="#drawn" role="tab" title="Drawn Features"><i class="fa-regular fa-object-ungroup fa-lg"></i> </a> </li>-->
+                <li><a href="#mapping" role="tab" title="Change base map used for visualization."><i class="fa-solid fa-globe fa-lg"></i></a></li>
             </ul>
 
             <ul role="tablist">
                 <li><a href="#profile" role="tab"><i class="fa-solid fa-users fa-lg"></i></a></li>
-                <li><a href="https://github.com/mwu233/NIFA_WebDev" role="tab" target="_blank"><i class="fa-brands fa-github fa-lg"></i></a></li>
+<!--                <li><a href="https://github.com/mwu233/NIFA_WebDev" role="tab" target="_blank"><i class="fa-brands fa-github fa-lg"></i></a></li>-->
 <!--                <li><a href="#settings" role="tab"><i class="fa fa-gear fa-2x"></i></a></li>-->
             </ul>
         </div>
 
         <!-- Tab panes -->
         <div class="sidebar-content">
-            <div class="sidebar-pane" id="home">
-<!--                <span class="tooltiptext">Click to expand</span>-->
-                <h1 class="sidebar-header">
-                    Project Introduction
-                    <span class="sidebar-close"><i class="fa fa-caret-left"></i></span>
-                </h1>
-                <p>References: <a href="https://www.sciencedirect.com/science/article/abs/pii/S0034425721001267" role="tab" target="_blank">Corn yield prediction and uncertainty analysis based on remotely sensed variables using a Bayesian neural network approach</a>.</p>
-                <p>In this project, we have developed models and tools to provide near real-time in-season crop yield predictions for two mainly commodity crops (i.e., corn and soybeans) at the county-level for the CONUS, based on state-of-the-art remote sensing and deep learning technologies. </p>
-                <p>The predicted yield information will be disseminated through a web-based cyber-platform for free public use, which is critical for a variety of stakeholders, such as for US producers to make operational decisions; for insurance companies to help with claim and compliance assessment; for agricultural finance companies to support businesses of distribution, processing, and marketing. </p>
-                <p>The predicted yield information will also be delivered to USDA for decision support to maintain the stability of the food supply and price, to reduce food security threats. The proposed tool could potentially reduce the USDA NASS survey response burden and cost, improve the efficiency and data quality, and enhance USDA NASS crop yield prediction capability. </p>
-                <p>Therefore, the proposed project will add value to NASS's existing crop yield estimation program and have broad impacts on many stakeholders.</p>
+
+
+            <div class="sidebar-pane" id="run">
+                <h1 class="sidebar-header">Run Model<span class="sidebar-close"><i class="fa fa-caret-left"></i></span></h1>
+
+                <div id="modelLocationFillIn">
+                    <h3 style="margin-bottom:0px;margin-top: 25px;margin-left: 0px;">
+                        Location:
+                    </h3>
+                    <!--Make sure the form has the autocomplete function switched off:-->
+                    <form autocomplete="off" action="/action_page.php">
+                        <div class="autocomplete" style="width:300px;">
+                            <input id="modelLocationInput" type="text" name="location" placeholder="Enter a county">
+                        </div>
+                    </form>
+                </div>
+
+                <div id="predictionTypeSelector">
+                    <h3 style="margin-bottom:0px;margin-top: 25px;margin-left: 0px;">
+                        Select a model:
+                    </h3>
+                    <label for="modelName"></label>
+                    <select name="Model Type" id="predictionType" style="font-size: 16px; padding: 3px">
+                        <option value="predictYearly">Yearly</option>
+                        <option value="predictSeasonal">Seasonal</option>
+                        <option value="predictMonthly">Monthly</option>
+                    </select>
+                </div>
+
+                <div id="modelSelector">
+                    <h3 style="margin-bottom:0px;margin-top: 25px;margin-left: 0px;">
+                        Select a model:
+                    </h3>
+                    <label for="modelName"></label>
+                    <select name="Model Type" id="modelName" style="font-size: 16px; padding: 3px">
+                        <option value="bayesian">Bayesian</option>
+                        <option value="pda">Partial domain adaptation</option>
+                        <option value="mil">Multiple Instance Learning</option>
+                        <option value="hybrid">Hybrid</option>
+                    </select>
+                </div>
+                <div id="modelInputButton" style="margin-top: 15px;">
+                    <button class="btn apply" onclick="runModel()" style="margin-left: 15px;">Run Selected Model</button>
+                </div>
+
             </div>
-            <div class="sidebar-pane" id="info">
-                <h1 class="sidebar-header">Map Information<span class="sidebar-close"><i class="fa fa-caret-left"></i></span></h1>
-                <p>This web portal is based on the libraries of Leaflet and D3 in Javascript for users to interact with our prediction results. Currently, the web map portal supports the following main functions:
-                    <ul class="lorem"><!--<ul class="lorem">-->
-                        <li>Presenting the general information of NIFA Corn Yield Prediction Project at the menu, e.g., introduction, publications, documentation, profiles of the research group, and the web map user guideline;</li>
-                        <li>Displaying the studied areas by census tract, with crop yield prediction results rendered as a choropleth map, along with web map interaction basics such as zooming in/out;</li>
-                        <li>Hovering on a census tract of interest, and its information of crop type, yield, and prediction value, date and error will be displayed in a panel at the top-right corner, along with a scatter-plot displaying the temporal changes;</li>
-                        <li>Selecting a location, crop type, year, prediction date, and an attribute (i.e., crop yield value, prediction value, and prediction error), and the filtered information will be displayed on the map;</li>
-                        <li>Linking to the web map Github portal for any further information.</li>
-                    </ul>
-                </p>
-                <p>Other functions will also be developed in the next steps (but not limited to):
-                    <ul class="lorem">
-                        <li>Editing the map, e.g., adding features (point/line/polygon) and annotation to the map;</li>
-                        <li>Saving the map with the selected information by the user;</li>
-                        <li>Downloading the open-sourced map data selected by the user;</li>
-                        <li>Contacting the technician for help.</li>
-                    </ul>
-                </p>
-            </div>
+
             <div class="sidebar-pane" id="profile">
                 <h1 class="sidebar-header">Research Group<span class="sidebar-close"><i class="fa fa-caret-left"></i></span></h1>
                 <p>Zhou Zhang, UW-Madison, zzhang347@wisc.edu; </p>
@@ -82,7 +120,8 @@
                 <p>Qunying Huang, UW-Madison, qhuang46@wisc.edu;</p>
                 <p>Meiliu Wu, UW-Madison, mwu233@wisc.edu; </p>
             </div>
-            <div class="sidebar-pane" id="basemap">
+
+            <div class="sidebar-pane" id="mapping">
                 <h1 class="sidebar-header">Base Map<span class="sidebar-close"><i class="fa fa-caret-left"></i></span></h1>
                 <div id="basemapSelector">
                     <h3 style="margin-bottom:0px;margin-top: 25px;margin-left: 0px;">
@@ -96,15 +135,51 @@
                         <option value="Esri NatGeoWorldMap">Esri NatGeoWorldMap</option>
                         <option value="CartoDB Positron">CartoDB Positron</option>
                         <option value="USGS USTopo">USGS USTopo</option>
-
                     </select>
                 </div>
                 <div id="basemapButton" style="margin-top: 15px;">
                     <button class="btn apply" onclick="changeBaseMap()" style="margin-left: 15px;">Apply Basemap</button>
                 </div>
 
+                <div>
+                    <div id="inputPanel">
+                        <div>
+                            <label for="userTitle"  style="margin-bottom:0px;margin-top: 5px;" >Title:</label>
+                            <br>
+                            <input type="text" class="input" id="userTitle" style="margin-bottom:0px;margin-top: 5px;" >
+                        </div>
+                        <div>
+                            <label for="userDescription" style="margin-bottom:5px;margin-top: 5px;">Description:</label>
+                            <br>
+                            <textarea type="text" class="input" id="userDescription" style="margin-bottom:5px;margin-top: 5px;white-space: pre" rows="10" cols="35"></textarea>
+                        </div>
+                        <div>
+                            <label for="fontSelect" style="margin-bottom:5px;margin-top: 5px;">Font:</label>
+                            <select id="fontSelect">
+                                <option value="Arial">Arial</option>
+                                <option value="Verdana">Verdana</option>
+                                <option value="Helvetica">Helvetica</option>
+                                <option value="Times New Roman">Times New Roman</option>
+                                <option value="Georgia">Georgia</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label for="colorPicker" style="margin-bottom:5px;margin-top: 5px;">Background Color:</label>
+                            <input type="color" id="colorPicker" value="#ffffff" style="margin-bottom:15px;margin-top: 5px;">
+                        </div>
+                        <div>
+                            <label for="baseMapOn" style="margin-bottom:5px;margin-top: 5px;">Download with basemap on:</label>
+                            <input type="checkbox" id="baseMapOn" style="margin-bottom:15px;margin-top: 5px;" checked="true">
+                        </div>
+                    </div>
+                    <button class="btn" style="background:#3630a3;color:white;" onclick="downloadFunc('mapid')">
+                        Download Current Map View</button>
+
+                </div>
+
             </div>
-            <div class="sidebar-pane" id="filter">
+
+            <div class="sidebar-pane" id="search">
                 <h1 class="sidebar-header">Select<span class="sidebar-close"><i class="fa fa-caret-left"></i></span></h1>
 
                 <!--Location selection-->
@@ -183,8 +258,12 @@
                     </select>
                 </div>
 
-                <div id="controlButton" style="margin-top: 15px;">
+                <div id="controlButton" style="margin-top: 15px;position: absolute">
                     <button class="btn apply" onclick="applySetting()" style="margin-left: 15px;">Apply Selections</button>
+                </div>
+
+                <div id="table-view" style="margin-top: 15px">
+                    <span id="close" onclick="this.parentNode.parentNode.remove(); return false;" style="padding: 10px;cursor: move;z-index: 10;background-color: #555555">x</span>
                 </div>
 
                 <select name="dataDownFormat" id="dataDownFormat" style="font-size: 16px; padding: 3px;margin-top: 10px">
@@ -197,8 +276,9 @@
                 </div>
 
             </div>
-            <div class="sidebar-pane" id="edit">
-                <h1 class="sidebar-header">Edit<span class="sidebar-close"><i class="fa fa-caret-left"></i></span></h1>
+
+            <div class="sidebar-pane" id="visualization">
+                <h1 class="sidebar-header">Visualization<span class="sidebar-close"><i class="fa fa-caret-left"></i></span></h1>
 
                 <!--Location selection-->
                 <div id="plotCounty">
@@ -248,71 +328,28 @@
 
                     <div id="scatterP"></div>
                 </div>
-                </div>
 
-
-            <div class="sidebar-pane" id="download">
-                <h1 class="sidebar-header">Download Data<span class="sidebar-close"><i class="fa fa-caret-left"></i></span></h1>
-                <p><a href="https://github.com/mwu233/NIFA_WebDev/tree/main/data" role="tab" target="_blank">Download Prediction Results</a></p>
-                <p><a href="https://github.com/mwu233/NIFA_WebDev/tree/main/data" role="tab" target="_blank">Download Variables</a></p>
-                <p> </p>
-                <div id="inputPanel">
-                    <div>
-                        <label for="userTitle"  style="margin-bottom:0px;margin-top: 5px;" >Title:</label>
-                        <br>
-                        <input type="text" class="input" id="userTitle" style="margin-bottom:0px;margin-top: 5px;" >
-                    </div>
-                    <div>
-                        <label for="userDescription" style="margin-bottom:5px;margin-top: 5px;">Description:</label>
-                        <br>
-                        <textarea type="text" class="input" id="userDescription" style="margin-bottom:5px;margin-top: 5px;white-space: pre" rows="10" cols="35"></textarea>
-                    </div>
-                    <div>
-                        <label for="fontSelect" style="margin-bottom:5px;margin-top: 5px;">Font:</label>
-                        <select id="fontSelect">
-                            <option value="Arial">Arial</option>
-                            <option value="Verdana">Verdana</option>
-                            <option value="Helvetica">Helvetica</option>
-                            <option value="Times New Roman">Times New Roman</option>
-                            <option value="Georgia">Georgia</option>
-                        </select>
-                    </div>
-                    <div>
-                        <label for="colorPicker" style="margin-bottom:5px;margin-top: 5px;">Background Color:</label>
-                        <input type="color" id="colorPicker" value="#ffffff" style="margin-bottom:15px;margin-top: 5px;">
-                    </div>
-                </div>
-                <button class="btn" style="background:#3630a3;color:white;" onclick="downloadFunc('mapid')">
-                    Download Current Map View</button>
-            </div>
-<!--            <div class="sidebar-pane" id="save">-->
-<!--                <h1 class="sidebar-header">Save Map<span class="sidebar-close"><i class="fa fa-caret-left"></i></span></h1>-->
-<!--                <button class="btn" style="background:#3630a3;color:white;" onclick="downloadFunc('map')">-->
-<!--                    Download Current Map View</button>-->
-<!--                <div id="testdiv"></div>-->
-<!--            </div>-->
-            <div class="sidebar-pane" id="drawn">
-                <h1 class="sidebar-header">Drawn Features<span class="sidebar-close"><i class="fa-solid fa-caret-left fa-lg"></i></span></h1>
                 <div id="drawnFeatures">
                     <h3 style="margin-bottom:0px;margin-top: 5px;margin-left: 0px;">
                         Drawn Features:
                     </h3>
                     <div id="drawnFeaturesList" style="margin-bottom:5px;margin-top: 10px;margin-left: 0px;"></div>
                 </div>
-            </div>
+
+                </div>
+
+
+<!--            <div class="sidebar-pane" id="drawn">-->
+<!--                <h1 class="sidebar-header">Drawn Features<span class="sidebar-close"><i class="fa-solid fa-caret-left fa-lg"></i></span></h1>-->
+
+<!--            </div>-->
             <div class="sidebar-pane" id="settings">
                 <h1 class="sidebar-header">Settings<span class="sidebar-close"><i class="fa fa-caret-left"></i></span></h1>
             </div>
         </div>
     </div>
 
-    <div id="bar" class="topnav">
-        <a class="active">&nbsp&nbsp Crop Yield Prediction &nbsp&nbsp</a>
-<!--&lt;!&ndash;        <a href="#about">About</a>&ndash;&gt;-->
-<!--&lt;!&ndash;        <a href="#help">Help</a>&ndash;&gt;-->
-<!--&lt;!&ndash;        <a href="#publications">Publications</a>&ndash;&gt;-->
-<!--&lt;!&ndash;        <a href="#documentation">Documentation</a>&ndash;&gt;-->
-    </div>
+
     <div id = "mapid">
         <div id="map"></div>
     </div>
@@ -334,5 +371,9 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet.draw/0.4.2/leaflet.draw.js"></script>
     <script src="https://html2canvas.hertzen.com/dist/html2canvas.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/@turf/turf@6/turf.min.js"></script>
+
+
+    <script type="text/javascript" src="https://unpkg.com/tabulator-tables@6.2.1/dist/js/tabulator.min.js"></script>
+
 </body>
 </html>
