@@ -28,14 +28,19 @@
 <body >
     <div id="bar" class="topnav">
     <a class="active">&nbsp&nbsp Crop Yield Prediction &nbsp&nbsp</a>
-    <a href="#profile" role="tab"><i class="fa-solid fa-users fa-lg"></i></a>
-<!--    <a href="https://github.com/mwu233/NIFA_WebDev" role="tab" target="_blank"><i class="fa-brands fa-github fa-lg"></i></a>-->
-    <a href="#tablepop" role="tab"><i class="fa fa-table fa-lg" onclick="toggleTable()"></i></a>
+    <a href="#profile" role="tab"><i class="fa-solid fa-users"></i></a>
+    <a href="https://github.com/mwu233/NIFA_WebDev" role="tab" target="_blank"><i class="fa-brands fa-github "></i></a>
+    <a href="#tablepop" role="tab"><i class="fa fa-table" onclick="toggleTable()"></i></a>
     <!--&lt;!&ndash;        <a href="#about">About</a>&ndash;&gt;-->
     <!--&lt;!&ndash;        <a href="#help">Help</a>&ndash;&gt;-->
     <!--        <a href="#publications">Publications</a>-->
     <!--        <a href="#documentation">Documentation</a>-->
     <!--        <a href="index.html">About</a>-->
+        <a role="tab"><i class="fa fa-chart-line" ></i></a>
+<!--        <a role="tab"><i class="fa fa-location-dot" ></i></a>-->
+        <a role="tab"><i class="fa fa-map-location-dot" ></i></a>
+        <a role="tab"><i class="fa fa-gears" ></i></a>
+        <a role="tab"><i class="" ></i></a>
     </div>
 
 
@@ -71,14 +76,23 @@
 
                 <div id="modelLocationFillIn">
                     <h3 style="margin-bottom:0px;margin-top: 25px;margin-left: 0px;">
-                        Location:
+                        County:
                     </h3>
                     <!--Make sure the form has the autocomplete function switched off:-->
                     <form autocomplete="off" action="/action_page.php">
                         <div class="autocomplete" style="width:300px;">
-                            <input id="modelLocationInput" type="text" name="location" placeholder="Enter a county">
+                            <input id="modelLocationInput" type="text" name="County" placeholder="Enter a county">
                         </div>
                     </form>
+                </div>
+
+                <div id="runModelState">
+                    <h3 style="margin-bottom:0px;margin-top: 5px;margin-left: 0px;">
+                        State:
+                    </h3>
+                    <div class="selector" style="width:300px;">
+                        <select id="runModelStateIn"  style="width:150px;"></select>
+                    </div>
                 </div>
 
                 <div id="predictionTypeSelector">
@@ -182,6 +196,7 @@
             <div class="sidebar-pane" id="search">
                 <h1 class="sidebar-header">Search<span class="sidebar-close"><i class="fa fa-caret-left"></i></span></h1>
 
+                <div>
                 <!--Location selection-->
                 <div id="locationFillIn">
                     <h3 style="margin-bottom:0px;margin-top: 25px;margin-left: 0px;">
@@ -258,8 +273,10 @@
                     </select>
                 </div>
 
-                <div id="controlButton" style="margin-top: 15px;position: absolute">
+                <div id="controlButton" style="margin-top: 15px">
                     <button class="btn apply" onclick="applySetting()" style="margin-left: 15px;margin-bottom: 10px">Apply Selections</button>
+                </div>
+
                 </div>
 
                 <div id="table-view" style="margin-top: 15px">
