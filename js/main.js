@@ -144,8 +144,8 @@ function createMap(){
 
             if(turf.booleanIntersects(layer.toGeoJSON(), drawnPolygon)){
                 highlightHelper(layer,'#68da4c','layer')
-              intersectCounty.push(layer.feature.properties.NAMELSAD);
-              intersectFIPS.push(layer.feature.properties.FIPS);
+                intersectCounty.push(layer.feature.properties.NAMELSAD);
+                intersectFIPS.push(layer.feature.properties.FIPS);
             }
         })
         drawnFeaturesDict[layer._leaflet_id] = new DrawnFeature(layer._leaflet_id,layer,type,intersectCounty,intersectFIPS);
@@ -270,7 +270,7 @@ function changeBaseMap(){
         })
     };
     curTileLayer = basemaps[$('#basemapInput').val()]
-        curTileLayer.addTo(curMap);
+    curTileLayer.addTo(curMap);
 
 }
 
@@ -369,7 +369,7 @@ function processData(data){
     return properties;
 }
 
-function createChoropleth(data, map, attrs, idx){
+function createChoropleth(data, map, attrs, idx,blank=false){
     // remove current layer if exists
     if (curLayer){
         map.removeLayer(curLayer);
@@ -390,6 +390,18 @@ function createChoropleth(data, map, attrs, idx){
         style: style,
         onEachFeature: onEachFeature
     });
+
+    if (blank){
+        geoJsonLayer = L.geoJson(data, {
+            style: {fillColor: 'gray',weight: 0,
+                opacity: 1,
+                color: 'white',
+                dashArray: '3',
+                fillOpacity: 0.65},
+            onEachFeature: onEachFeature
+        });
+
+    }
 
     return geoJsonLayer;
 }
@@ -413,13 +425,13 @@ waitForElement()
 function getColor(d) {
 
     if (curProperty === "error") {
-    // "#009392",
-    // "#39b185",
-    // "#9ccb86",
-    //         "#e9e29c",
-    //         "#eeb479",
-    //         "#e88471",
-    //         "#cf597e";
+        // "#009392",
+        // "#39b185",
+        // "#9ccb86",
+        //         "#e9e29c",
+        //         "#eeb479",
+        //         "#e88471",
+        //         "#cf597e";
         return d < -2 ? "#009392" :
             d < -1 ? "#39b185" :
                 d < 1 ? "#e9e29c":
@@ -487,12 +499,12 @@ function highlightHelper(e,color='#68da4c',type='e') {
 
     if(highlightedLayers.length>0 && color==='default'){return} //default color means not clicked
     var content = '<h4>Crop Yield Information</h4>' +
-                '<b>' + layer.feature.properties.NAMELSAD + '</b><br />' +
-                'Crop type: ' + curCrop + '<br />' +
-                'Date: ' + curDate[curMonth] + "/" + curYear + '<br />' +
-                'Yield: ' + Number(layer.feature.properties.yield).toFixed(2) + ' unit / mi<sup>2</sup><br />' +
-                'Prediction: ' + Number(layer.feature.properties.pred).toFixed(2) + ' unit / mi<sup>2</sup><br />' +
-                'Error: ' + Number(layer.feature.properties.error).toFixed(2) + ' unit / mi<sup>2</sup>';
+        '<b>' + layer.feature.properties.NAMELSAD + '</b><br />' +
+        'Crop type: ' + curCrop + '<br />' +
+        'Date: ' + curDate[curMonth] + "/" + curYear + '<br />' +
+        'Yield: ' + Number(layer.feature.properties.yield).toFixed(2) + ' unit / mi<sup>2</sup><br />' +
+        'Prediction: ' + Number(layer.feature.properties.pred).toFixed(2) + ' unit / mi<sup>2</sup><br />' +
+        'Error: ' + Number(layer.feature.properties.error).toFixed(2) + ' unit / mi<sup>2</sup>';
     if(highlightedLayers.length===0||color!=='default') {
         updateTemporalInfo(content);
     }
@@ -898,23 +910,34 @@ function createSideMenu(map) {
     L.Control.Sidebar.prototype._onClick = function() {
         var tabId = this.querySelector('a').hash.slice(1);
 
-            // Call the original _onClick function for other tabs
-            if (L.DomUtil.hasClass(this, 'active')) {
-                this._sidebar.close();
-            } else if (!L.DomUtil.hasClass(this, 'disabled')) {
-                this._sidebar.open(tabId);
-                if (tabId === 'run') {
-                    // console.log("change base map to none")
-                    curTileLayer = L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Terrain_Base/MapServer/tile/{z}/{y}/{x}', {
-                        attribution: 'Tiles &copy; Esri &mdash; Source: USGS, Esri, TANA, DeLorme, and NPS',
-                        maxZoom: 13
-                    })
-                    curTileLayer.addTo(curMap);
-                } else {
-                    // console.log("change base map to osm")
-                    changeBaseMap()
-                }
+        // Call the original _onClick function for other tabs
+        if (L.DomUtil.hasClass(this, 'active')) {
+            this._sidebar.close();
+        } else if (!L.DomUtil.hasClass(this, 'disabled')) {
+            this._sidebar.open(tabId);
+            if (tabId === 'run') {
+                // console.log("change base map to none")
+                curTileLayer = L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Terrain_Base/MapServer/tile/{z}/{y}/{x}', {
+                    attribution: 'Tiles &copy; Esri &mdash; Source: USGS, Esri, TANA, DeLorme, and NPS',
+                    maxZoom: 13
+                })
+                curTileLayer.addTo(curMap);
+
+                curLayer = createChoropleth(curResponse, curMap, curAttrs, 0,true);
+                curMap.addLayer(curLayer);
+                // curLayer.eachLayer(function (layer) {
+                //     layer.setStyle({color:"gray",fillColor:"#f7f7f7"})
+                // })
+
+            } else {
+                // console.log("change base map to osm")
+                changeBaseMap()
+                curLayer.remove()
+                curLayer = createChoropleth(curResponse, curMap, curAttrs, 0);
+                curMap.addLayer(curLayer);
+
             }
+        }
 
     };
 
@@ -1231,7 +1254,7 @@ function downloadFunc(divID){
         console.log(userTitile)
         heading.innerHTML =  (userTitile===''?"<h3>Crop Yield Prediction Map</h3>":("<h3>"+userTitile+"</h3>") )+
             "Crop Type: "+(curCrop==="corn"?"Corn":"Soybean")+"&nbsp;&nbsp; Year: "+curYear+"  &nbsp;&nbsp;    Date: "+curDate[curMonth]+""
-        +"<br> "+document.getElementById("userDescription").value
+            +"<br> "+document.getElementById("userDescription").value
 
         heading.style.backgroundColor = document.getElementById("colorPicker").value;
 
@@ -1310,21 +1333,21 @@ function downloadFunc(divID){
 
 }
 /**
-function downloadPDFFunc(divID){
-    const doc = new jspdf.jsPDF()
-    doc.html(document.getElementById('report'), {
-        callback: function (doc) {
+ function downloadPDFFunc(divID){
+ const doc = new jspdf.jsPDF()
+ doc.html(document.getElementById('report'), {
+ callback: function (doc) {
 
-            let svgStr = serializer.serializeToString(document.getElementById('scatterP').innerHTML)
-            doc.addSvgAsImage(document.getElementById('scatterP').innerHTML,
-                0, 0, 210, 297)
+ let svgStr = serializer.serializeToString(document.getElementById('scatterP').innerHTML)
+ doc.addSvgAsImage(document.getElementById('scatterP').innerHTML,
+ 0, 0, 210, 297)
 
-            doc.save('a4.pdf')
-        }
-    })
+ doc.save('a4.pdf')
+ }
+ })
 
-}
-**/
+ }
+ **/
 
 function downloadData(){
     applySetting()
@@ -1447,7 +1470,7 @@ function plotFunc(mode='new'){
                 scatterGen("scatterP",Number(row.GEOID),mode)
                 return row.GEOID;
             }
-    })
+        })
         console.log(curFIPS)
         if(highlightedLayers.length===0){
             curMap.eachLayer(function (layer) {
@@ -1462,7 +1485,7 @@ function plotFunc(mode='new'){
                 }
             })
         }
-    return thisFIPS
+        return thisFIPS
     })
 
 }
@@ -1520,7 +1543,7 @@ function scatterGen(plotDivID,fipsIn,mode='new'){
             statDiv.innerHTML=statText
         }else {
             const a = document.createElement('div')
-                a.innerHTML= statText
+            a.innerHTML= statText
             document.getElementById(plotDivID).appendChild(a)
         }
 
