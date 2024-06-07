@@ -910,9 +910,17 @@ function createSideMenu(map) {
                         maxZoom: 13
                     })
                     curTileLayer.addTo(curMap);
+                    curLayer.eachLayer(function (layer) {
+                        layer.setStyle({color:"gray",fillColor:"#f7f7f7"})
+                    })
+                    
                 } else {
                     // console.log("change base map to osm")
                     changeBaseMap()
+                    curLayer.remove()
+                    curLayer = createChoropleth(curResponse, curMap, curAttrs, 0);
+                    curMap.addLayer(curLayer);
+
                 }
             }
 
