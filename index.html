@@ -15,7 +15,8 @@
     <link rel="stylesheet" href="css/Leaflet.BigImage.min.css">
     <link href="https://unpkg.com/tabulator-tables@6.2.1/dist/css/tabulator.min.css" rel="stylesheet">
     <link rel="stylesheet" type="text/css" href="src/leaflet.css"/>
-    <link rel="stylesheet" type="text/css" href="src/L.Control.ZoomBar.css"/>
+    <link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/toastify-js/src/toastify.min.css">
+<!--    <link rel="stylesheet" type="text/css" href="src/L.Control.ZoomBar.css"/>-->
 
 
     <style>
@@ -57,7 +58,7 @@
 <!--                <li><a href="#download" role="tab" title="Download research data."><i class="fa-solid fa-file-arrow-down fa-lg"></i></a></li>-->
 <!--                <li><a href="#save" role="tab"><i class="fa fa-save fa-2x"></i></a></li>-->
 <!--                <li><a href="#drawn" role="tab" title="Drawn Features"><i class="fa-regular fa-object-ungroup fa-lg"></i> </a> </li>-->
-                <li><a href="#mapping" role="tab" title="Change base map used for visualization."><i class="fa-solid fa-globe fa-lg"></i></a></li>
+                <li><a href="#mapping" role="tab" title="Mapping and download"><i class="fa-solid fa-globe fa-lg"></i></a></li>
             </ul>
 
             <ul role="tablist">
@@ -119,6 +120,9 @@
                         <option value="hybrid">Hybrid</option>
                     </select>
                 </div>
+
+                <div id="modelDrawnFeatures"></div>
+
                 <div id="modelInputButton" style="margin-top: 15px;">
                     <button class="btn apply" onclick="runModel()" style="margin-left: 15px;">Run Selected Model</button>
                 </div>
@@ -136,7 +140,7 @@
             </div>
 
             <div class="sidebar-pane" id="mapping">
-                <h1 class="sidebar-header">Base Map<span class="sidebar-close"><i class="fa fa-caret-left"></i></span></h1>
+                <h1 class="sidebar-header">Mapping<span class="sidebar-close"><i class="fa fa-caret-left"></i></span></h1>
                 <div id="basemapSelector">
                     <h3 style="margin-bottom:0px;margin-top: 25px;margin-left: 0px;">
                         Base Map:
@@ -371,6 +375,15 @@
     <div id = "mapid">
         <div id="map"></div>
     </div>
+
+    <div id="popup" class="popup">
+        <div class="progress-container">
+            <div class="progress-bar" id="progress-bar"></div>
+        </div>
+        <button onclick="closePopup()">Close</button>
+    </div>
+    <button onclick="showPopup()">Show Loading</button>
+
     <script src="https://unpkg.com/leaflet@1.6.0/dist/leaflet.js" integrity="sha512-gZwIG9x3wUXg2hdXF6+rVkLF/0Vi9U8D2Ntg4Ga5I5BZpVkVxlJWbSQtXPSiUTtC0TjtGOmxa1AJPuV0CPthew==" crossorigin=""></script>
     <script type="text/javascript" src="lib/jquery-3.3.1.js"></script>
     <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/dom-to-image-more/3.3.0/dom-to-image-more.min.js"></script>
@@ -392,6 +405,7 @@
 
 
     <script type="text/javascript" src="https://unpkg.com/tabulator-tables@6.2.1/dist/js/tabulator.min.js"></script>
+    <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/toastify-js"></script>
 
 </body>
 </html>
