@@ -184,7 +184,7 @@ function removeAllDrawn(){
     drawnFeaturesDict = {};
     document.getElementById("drawnFeaturesList").innerHTML = "";
     document.getElementById("modelDrawnFeatures").innerHTML = "";
-
+    updateDrawnFeaturesDict()
 }
 
 function updateDrawnFeaturesDict(){
@@ -1677,7 +1677,7 @@ async function runModel(){
     // alert("Model started running, it may take a while. Please check the progress later.")
     Toastify({
         text: "Model is running, it may take a while. Please check the progress later.",
-        duration: 4000,
+        duration: 14000,
         newWindow: true,
         close: true,
         gravity: "top", // `top` or `bottom`
@@ -1690,11 +1690,11 @@ async function runModel(){
         onClick: function(){} // Callback after click
     }).showToast();
     showPopup()
-    await new Promise(r => setTimeout(r, 3500));
+    await new Promise(r => setTimeout(r, 19000));
 
     Toastify({
         text: "Model finished running.",
-        duration: 4500,
+        duration: 6000,
         newWindow: true,
         close: true,
         gravity: "top", // `top` or `bottom`
@@ -1730,7 +1730,7 @@ function closePopup() {
 function loadProgress() {
     var progressBar = document.getElementById('progress-bar');
     var width = 0;
-    var interval = setInterval(frame, 23); // Update every 20ms
+    var interval = setInterval(frame, 180); // Update every 20ms
 
     function frame() {
         if (width >= 100) {
