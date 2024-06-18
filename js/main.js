@@ -778,7 +778,7 @@ function updateTemporalInfo(content,update=false){
 }
 
 function createLegend(map){
-    var legend = L.control({position: 'bottomleft'});
+    var legend = L.control({position: 'bottomright'});
 
     legend.onAdd = function (map) {
 
