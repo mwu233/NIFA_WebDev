@@ -69,9 +69,14 @@ function createMap(){
         maxBounds: [[20,-130],[52,-60]],
         maxBoundsViscosity: 1.0,
     });
+
     map.doubleClickZoom.disable();
     curMap = map;
 
+    zoomControl = L.control.zoom({
+        position: 'topright'
+
+    }).addTo(map);
     //add OSM base tilelayer
     curTileLayer = L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
         attribution: '&copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a>',
@@ -94,9 +99,13 @@ function createMap(){
 
     // leaflet draw control
     map.addLayer(drawnFeatures);
+    L.EditToolbar.Delete.include({
+        removeAllLayers: true
+    });
     drawControl = new L.Control.Draw({
         edit: {
-            featureGroup: drawnFeatures },
+            featureGroup: drawnFeatures,
+            remove: true},
         position: 'bottomright',
         draw: {
             polygon: {
@@ -130,9 +139,13 @@ function createMap(){
     // console.log("drawControl");
 
     map.on('draw:created', function (e) {
+        if (drawFlag === 'run') {
+            removeAllDrawn();
+        }
+
         var type = e.layerType;
         var layer = e.layer;
-        console.log(type);
+        // console.log(type);
         drawnFeatures.addLayer(layer);
         // $("#drawnFeaturesList").append("<li>Drawn Feature</li>");
 
@@ -170,27 +183,31 @@ function removeAllDrawn(){
     drawnFeatures.clearLayers();
     drawnFeaturesDict = {};
     document.getElementById("drawnFeaturesList").innerHTML = "";
-
+    document.getElementById("modelDrawnFeatures").innerHTML = "";
 
 }
 
 function updateDrawnFeaturesDict(){
 
-
-
     function upperInitial(str) {if (str.length === 0) {return str;} const firstChar = str.charAt(0).toUpperCase();const restOfString = str.slice(1);return firstChar + restOfString;}
     num = 1;
     $("#drawnFeaturesList").empty();
+    $("#modelDrawnFeatures").empty();
+
     for (const [key, value] of Object.entries(drawnFeaturesDict)) {
         let msg = "<li>" +num+". "+ upperInitial(value.type) +"     <button onclick='fitBoundsByID("+key.toString()+")'"  +">GO</button>"  +"</li>";
         msg+= "<ul>";
-        msg += "Selected locations: ";
+        msg += "Selected Counties: ";
         msg += value.intersectCounty.join(", ");
         $("#drawnFeaturesList").append(msg);
+        document.getElementById("modelDrawnFeatures").innerHTML = "<h3 style=\"margin-bottom:0px;margin-top: 15px;margin-left: 0px;\">\n" +
+            "                        Selected Counties:\n" +
+            "                    </h3>"+ value.intersectCounty.join(", ");
         msg = "<button onclick='downloadByDrawnFeature("+key.toString()+")'"  +">Download</button>";
         $("#drawnFeaturesList").append(msg);
         num++;
     }
+
 }
 
 function downloadByDrawnFeature(id){
@@ -369,6 +386,7 @@ function processData(data){
     return properties;
 }
 
+
 function createChoropleth(data, map, attrs, idx){
     // remove current layer if exists
     if (curLayer){
@@ -393,7 +411,6 @@ function createChoropleth(data, map, attrs, idx){
 
     return geoJsonLayer;
 }
-
 
 
 function waitForElement(){
@@ -761,7 +778,7 @@ function updateTemporalInfo(content,update=false){
 }
 
 function createLegend(map){
-    var legend = L.control({position: 'bottomright'});
+    var legend = L.control({position: 'bottomleft'});
 
     legend.onAdd = function (map) {
 
@@ -892,7 +909,14 @@ function toggleTable() {
     }
 }
 
-var sidebar
+let sidebar;
+let drawFlag = 'normal';
+/*
+This function overrides the original _onClick function in the sidebar.js file.
+We check if the tab clicked is the 'run' tab, if so, all the behaviors will be different.
+We do so by setting a global variable drawFlag to 'run'.
+
+ */
 function createSideMenu(map) {
 
     L.Control.Sidebar.prototype._onClick = function() {
@@ -904,18 +928,19 @@ function createSideMenu(map) {
             } else if (!L.DomUtil.hasClass(this, 'disabled')) {
                 this._sidebar.open(tabId);
                 if (tabId === 'run') {
-                    // console.log("change base map to none")
-                    curTileLayer = L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Terrain_Base/MapServer/tile/{z}/{y}/{x}', {
-                        attribution: 'Tiles &copy; Esri &mdash; Source: USGS, Esri, TANA, DeLorme, and NPS',
-                        maxZoom: 13
-                    })
-                    curTileLayer.addTo(curMap);
+                    curTileLayer.remove()
+                    curLayer.remove()
+                    curLegend.remove()
+                    curInfo.remove()
+                    drawFlag = 'run';
                 } else {
-                    // console.log("change base map to osm")
-                    changeBaseMap()
+                    curTileLayer.addTo(curMap);
+                    curLayer.addTo(curMap);
+                    curLegend.addTo(curMap);
+                    curInfo.addTo(curMap);
+                    drawFlag = 'normal';
                 }
             }
-
     };
 
     sidebar = L.control.sidebar('sidebar').addTo(map);
@@ -939,6 +964,7 @@ var locations = ['Cuming County', 'Lancaster County', 'Nuckolls County', 'Minneh
 // autocomplete(document.getElementById("locationInput"), locations);
 autocomplete(document.getElementById("modelLocationInput"), locations);
 autocomplete(document.getElementById("plotCountyIn"), locations);
+autocomplete(document.getElementById("locationInput"), locations);
 
 function autocomplete(inp, arr) {
     /*the autocomplete function takes two arguments,
@@ -1218,7 +1244,7 @@ function downloadFunc(divID){
     if (divID === 'mapid'){
         if (!(document.getElementById("baseMapOn").checked)){
             // console.log("baseMapOff")
-            curTileLayer.getContainer().style.display = 'none'
+            curTileLayer.remove()
         }
 
 
@@ -1280,6 +1306,8 @@ function downloadFunc(divID){
         drawControl.setPosition('bottomleft')
         bigDiv.insertBefore(heading,bigDiv.firstChild)
 
+
+
         mapdiv.style.width = '100%'
         mapdiv.style.height = '100vh'
 
@@ -1302,7 +1330,7 @@ function downloadFunc(divID){
                 curInfo.setPosition('topright')
 
             }
-            curTileLayer.getContainer().style.display = 'block'
+            curTileLayer.addTo(curMap)
             mapdiv.style.width = '100vw'
             mapdiv.style.height = '100vh'
 
@@ -1645,6 +1673,72 @@ function captureAndDownloadWindow() {
 
 }
 
-function runModel(){
-    alert("Model started running, it may take a while. Please check the progress later.")
+async function runModel(){
+    // alert("Model started running, it may take a while. Please check the progress later.")
+    Toastify({
+        text: "Model is running, it may take a while. Please check the progress later.",
+        duration: 4000,
+        newWindow: true,
+        close: true,
+        gravity: "top", // `top` or `bottom`
+        position: "center", // `left`, `center` or `right`
+        stopOnFocus: true, // Prevents dismissing of toast on hover
+        offset:{y:"500%"},
+        style: {
+            background: "linear-gradient(to right, #00b09b, #96c93d)",
+        },
+        onClick: function(){} // Callback after click
+    }).showToast();
+    showPopup()
+    await new Promise(r => setTimeout(r, 3500));
+
+    Toastify({
+        text: "Model finished running.",
+        duration: 4500,
+        newWindow: true,
+        close: true,
+        gravity: "top", // `top` or `bottom`
+        position: "center", // `left`, `center` or `right`
+        stopOnFocus: true, // Prevents dismissing of toast on hover
+        offset:{y:"500%"},
+        style: {
+            background: "linear-gradient(to right, #00b09b, #96c93d)",
+        },
+        onClick: function(){} // Callback after click
+    }).showToast();
+
 }
+
+function showPopup() {
+    var progressBar = document.getElementById('progress-bar');
+    progressBar.style.width = '0%';  // Reset the progress bar width to 0%
+    document.getElementById('popup').style.display = 'block';
+    // if (interval) {
+    //     clearInterval(interval); // Clear any existing interval
+    // }
+    loadProgress();
+}
+
+function closePopup() {
+    document.getElementById('popup').style.display = 'none';
+    if (interval) {
+        clearInterval(interval); // Clear interval when closing the popup
+    }
+
+}
+
+function loadProgress() {
+    var progressBar = document.getElementById('progress-bar');
+    var width = 0;
+    var interval = setInterval(frame, 23); // Update every 20ms
+
+    function frame() {
+        if (width >= 100) {
+            clearInterval(interval);
+        } else {
+            width++;
+            progressBar.style.width = width + '%';
+        }
+    }
+}
+
