@@ -7,7 +7,6 @@
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.6.0/dist/leaflet.css" integrity="sha512-xwE/Az9zrjBIphAcBb3F6JVqxf46+CDLwfLMHloNu6KEQCAWi6HcDUbeOfBIptF7tcCzusKFjFw2yuvEpDL9wQ==" crossorigin="" />
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" rel="stylesheet">
     <link rel="stylesheet" href="//code.jquery.com/ui/1.12.1/themes/base/jquery-ui.css">
-<!--    <link rel="stylesheet" href="css/leaflet-control-bar.css" />-->
     <link rel="stylesheet" href="css/leaflet-sidebar.css" />
     <link rel="stylesheet" href="css/style.css">
     <!-- leaflet draw plugin -->
@@ -16,7 +15,6 @@
     <link href="https://unpkg.com/tabulator-tables@6.2.1/dist/css/tabulator.min.css" rel="stylesheet">
     <link rel="stylesheet" type="text/css" href="src/leaflet.css"/>
     <link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/toastify-js/src/toastify.min.css">
-<!--    <link rel="stylesheet" type="text/css" href="src/L.Control.ZoomBar.css"/>-->
 
 
     <style>
@@ -32,17 +30,11 @@
     <a href="#profile" role="tab"><i class="fa-solid fa-users"></i></a>
     <a href="https://github.com/mwu233/NIFA_WebDev" role="tab" target="_blank"><i class="fa-brands fa-github "></i></a>
     <a href="#tablepop" role="tab"><i class="fa fa-table" onclick="toggleTable()"></i></a>
-    <!--&lt;!&ndash;        <a href="#about">About</a>&ndash;&gt;-->
-    <!--&lt;!&ndash;        <a href="#help">Help</a>&ndash;&gt;-->
-    <!--        <a href="#publications">Publications</a>-->
-    <!--        <a href="#documentation">Documentation</a>-->
-    <!--        <a href="index.html">About</a>-->
-        <a role="tab"><i class="fa fa-chart-line" ></i></a>
-<!--        <a role="tab"><i class="fa fa-location-dot" ></i></a>-->
-        <a role="tab"><i class="fa fa-map-location-dot" ></i></a>
-        <a role="tab"><i class="fa fa-gears" ></i></a>
-        <a role="tab"><i class="fa-solid fa-trash" onclick="removeAllDrawn()"></i></a>
-        <a role="tab"><i class="" ></i></a>
+    <a role="tab"><i class="fa fa-chart-line" ></i></a>
+    <a role="tab"><i class="fa fa-map-location-dot" ></i></a>
+    <a role="tab"><i class="fa fa-gears" ></i></a>
+    <a role="tab"><i class="fa-solid fa-trash" onclick="removeAllDrawn()"></i></a>
+    <a role="tab"><i class="" ></i></a>
     </div>
 
 
@@ -50,22 +42,15 @@
         <!-- Nav tabs -->
         <div class="sidebar-tabs">
             <ul role="tablist">
-<!--                <li><a href="#home" role="tab" title="Project Introduction."><i class="fa-solid fa-bars fa-lg"></i></a></li>-->
-<!--                <li><a href="#info" role="tab" title="Website usage."><i class="fa-solid fa-circle-info fa-lg"></i></a></li>-->
-<!--                <li class="disabled"><a href="#messages" role="tab"><i class="fa fa-envelope"></i></a></li>-->
                 <li><a href="#run" role="tab" title="Run Model"><i class="fa-solid fa-play-circle fa-lg"></i></a></li>
                 <li><a href="#search" role="tab" title="Data Search"><i class="fa-solid fa-filter fa-lg"></i></a></li>
                 <li><a href="#visualization" role="tab" title="Visualization"><i class="fa-solid fa-chart-simple fa-lg"></i></a></li>
-<!--                <li><a href="#download" role="tab" title="Download research data."><i class="fa-solid fa-file-arrow-down fa-lg"></i></a></li>-->
-<!--                <li><a href="#save" role="tab"><i class="fa fa-save fa-2x"></i></a></li>-->
-<!--                <li><a href="#drawn" role="tab" title="Drawn Features"><i class="fa-regular fa-object-ungroup fa-lg"></i> </a> </li>-->
                 <li><a href="#mapping" role="tab" title="Mapping and download"><i class="fa-solid fa-globe fa-lg"></i></a></li>
+<!--                <li><a href="#testtab" role="tab" title="Test Tab"><i class="fa-solid fa-globe fa-lg"></i></a> </li>-->
             </ul>
 
             <ul role="tablist">
                 <li><a href="#profile" role="tab"><i class="fa-solid fa-users fa-lg"></i></a></li>
-<!--                <li><a href="https://github.com/mwu233/NIFA_WebDev" role="tab" target="_blank"><i class="fa-brands fa-github fa-lg"></i></a></li>-->
-<!--                <li><a href="#settings" role="tab"><i class="fa fa-gear fa-2x"></i></a></li>-->
             </ul>
         </div>
 
@@ -76,17 +61,17 @@
             <div class="sidebar-pane" id="run">
                 <h1 class="sidebar-header">Run Model<span class="sidebar-close"><i class="fa fa-caret-left"></i></span></h1>
 
-                <div id="modelLocationFillIn">
-                    <h3 style="margin-bottom:0px;margin-top: 25px;margin-left: 0px;">
-                        County:
-                    </h3>
-                    <!--Make sure the form has the autocomplete function switched off:-->
-                    <form autocomplete="off" action="/action_page.php">
-                        <div class="autocomplete" style="width:300px;">
-                            <input id="modelLocationInput" type="text" name="County" placeholder="Enter a county">
-                        </div>
-                    </form>
-                </div>
+<!--                <div id="modelLocationFillIn">-->
+<!--                    <h3 style="margin-bottom:0px;margin-top: 25px;margin-left: 0px;">-->
+<!--                        County:-->
+<!--                    </h3>-->
+<!--                    &lt;!&ndash;Make sure the form has the autocomplete function switched off:&ndash;&gt;-->
+<!--                    <form autocomplete="off" action="/action_page.php">-->
+<!--                        <div class="autocomplete" style="width:300px;">-->
+<!--                            <input id="modelLocationInput" type="text" name="County" placeholder="Enter a county">-->
+<!--                        </div>-->
+<!--                    </form>-->
+<!--                </div>-->
 
                 <div id="runModelState">
                     <h3 style="margin-bottom:0px;margin-top: 5px;margin-left: 0px;">
@@ -94,6 +79,15 @@
                     </h3>
                     <div class="selector" style="width:300px;">
                         <select id="runModelStateIn"  style="width:150px;"></select>
+                    </div>
+                </div>
+
+                <div>
+                    <h3 style="margin-bottom:0px;margin-top: 5px;margin-left: 0px;">
+                        County:
+                    </h3>
+                    <div class="selector" style="width:300px;">
+                        <select id="runModelCountyIn"  style="width:150px;"></select>
                     </div>
                 </div>
 
@@ -203,17 +197,18 @@
 
                 <div>
                 <!--Location selection-->
-                <div id="locationFillIn">
-                    <h3 style="margin-bottom:0px;margin-top: 25px;margin-left: 0px;">
-                        Location:
-                    </h3>
-                    <!--Make sure the form has the autocomplete function switched off:-->
-                    <form autocomplete="off" action="/action_page.php">
-                        <div class="autocomplete" style="width:300px;">
-                            <input id="locationInput" type="text" name="location" placeholder="Enter a county">
-                        </div>
-                    </form>
-                </div>
+<!--                    What's the purpose for this? No need for this tab-->
+<!--                <div id="locationFillIn">-->
+<!--                    <h3 style="margin-bottom:0px;margin-top: 25px;margin-left: 0px;">-->
+<!--                        Location:-->
+<!--                    </h3>-->
+<!--                    &lt;!&ndash;Make sure the form has the autocomplete function switched off:&ndash;&gt;-->
+<!--                    <form autocomplete="off" action="/action_page.php">-->
+<!--                        <div class="autocomplete" style="width:300px;">-->
+<!--                            <input id="locationInput" type="text" name="location" placeholder="Enter a county">-->
+<!--                        </div>-->
+<!--                    </form>-->
+<!--                </div>-->
 
                 <div id="cropSelect">
                     <h3 style="margin-bottom:0px;margin-top: 25px;margin-left: 0px;">
@@ -302,17 +297,17 @@
                 <h1 class="sidebar-header">Visualization<span class="sidebar-close"><i class="fa fa-caret-left"></i></span></h1>
 
                 <!--Location selection-->
-                <div id="plotCounty">
-                    <h3 style="margin-bottom:0px;margin-top: 5px;margin-left: 0px;">
-                        Location:
-                    </h3>
-                    <!--Make sure the form has the autocomplete function switched off:-->
-                    <form autocomplete="off" action="/action_page.php">
-                        <div class="autocomplete" style="width:300px;">
-                            <input id="plotCountyIn" type="text" name="location" placeholder="Enter a county">
-                        </div>
-                    </form>
-                </div>
+<!--                <div id="plotCounty">-->
+<!--                    <h3 style="margin-bottom:0px;margin-top: 5px;margin-left: 0px;">-->
+<!--                        Location:-->
+<!--                    </h3>-->
+<!--                    &lt;!&ndash;Make sure the form has the autocomplete function switched off:&ndash;&gt;-->
+<!--                    <form autocomplete="off" action="/action_page.php">-->
+<!--                        <div class="autocomplete" style="width:300px;">-->
+<!--                            <input id="plotCountyIn" type="text" name="location" placeholder="Enter a county">-->
+<!--                        </div>-->
+<!--                    </form>-->
+<!--                </div>-->
 
                 <div id="plotState">
                     <h3 style="margin-bottom:0px;margin-top: 5px;margin-left: 0px;">
@@ -321,6 +316,15 @@
                         <div class="selector" style="width:300px;">
                             <select id="plotStateIn"  style="width:150px;"></select>
                         </div>
+                </div>
+
+                <div>
+                    <h3 style="margin-bottom:0px;margin-top: 5px;margin-left: 0px;">
+                        County:
+                    </h3>
+                    <div class="selector" style="width:300px;">
+                        <select id="plotCountyIn"  style="width:150px;"></select>
+                    </div>
                 </div>
 
                 <div id="plotCrop">
@@ -362,10 +366,28 @@
                 </div>
 
 
-<!--            <div class="sidebar-pane" id="drawn">-->
-<!--                <h1 class="sidebar-header">Drawn Features<span class="sidebar-close"><i class="fa-solid fa-caret-left fa-lg"></i></span></h1>-->
+            <div class="sidebar-pane" id="testtab">
+                <h1 class="sidebar-header">Test test Test<span class="sidebar-close"><i class="fa-solid fa-caret-left fa-lg"></i></span></h1>
 
-<!--            </div>-->
+                <div id="testState">
+                    <h3 style="margin-bottom:0px;margin-top: 5px;margin-left: 0px;">
+                        State:
+                    </h3>
+                    <div class="selector" style="width:300px;">
+                        <select id="testStateIn"  style="width:150px;"></select>
+                    </div>
+                </div>
+                <div>
+                    <h3 style="margin-bottom:0px;margin-top: 5px;margin-left: 0px;">
+                        County:
+                    </h3>
+                    <div class="selector" style="width:300px;">
+                        <select id="testCountyIn"  style="width:150px;"></select>
+                    </div>
+                </div>
+
+            </div>
+
             <div class="sidebar-pane" id="settings">
                 <h1 class="sidebar-header">Settings<span class="sidebar-close"><i class="fa fa-caret-left"></i></span></h1>
             </div>
@@ -383,7 +405,6 @@
         </div>
         <button onclick="closePopup()">Close</button>
     </div>
-    <button onclick="showPopup()">Show Loading</button>
 
     <script src="https://unpkg.com/leaflet@1.6.0/dist/leaflet.js" integrity="sha512-gZwIG9x3wUXg2hdXF6+rVkLF/0Vi9U8D2Ntg4Ga5I5BZpVkVxlJWbSQtXPSiUTtC0TjtGOmxa1AJPuV0CPthew==" crossorigin=""></script>
     <script type="text/javascript" src="lib/jquery-3.3.1.js"></script>
