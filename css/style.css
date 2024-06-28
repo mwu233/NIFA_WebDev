@@ -12,9 +12,9 @@ body{
 }
 
 #map .leaflet-bottom.leaflet-left {
-    right: 50%;               /* Center align the control container */
+    right: auto;               /* Center align the control container */
     transform: translateX(-50%); /* Use transform to precisely center the div */
-    left: auto;            /* Disable the default right positioning */
+    left: 50%;            /* Disable the default right positioning */
 }
 
 /*.leaflet-control {*/
