@@ -311,6 +311,7 @@ function getData(map, crop, year, month, location){
                 temp = temp.slice(0,2);
 
                 stateRange[temp] = stateFIPS[temp];
+                a.properties.STATE = stateFIPS[temp];
             })
 
             if (curProperty === "pred") {
@@ -410,6 +411,9 @@ function createChoropleth(data, map, attrs, idx){
         map.removeLayer(curLayer);
     }
 
+    document.getElementById("userTitle").value = curCrop.charAt(0).toUpperCase() + curCrop.slice(1) + " "
+        + (curProperty==="pred"?"Prediction":curProperty==="yield"?"Yield":"Error") + " for US in "  + curYear;
+
     //create a new/updated Leaflet GeoJSON layer and return it to the map
     // var geoJsonLayer = L.geoJson(data, {
     //     // for filtering with min and max
@@ -445,38 +449,6 @@ waitForElement()
 
 // color scheme referring https://leafletjs.com/examples/choropleth/
 function getColor(d) {
-
-    // if (curProperty === "error") {
-    // // "#009392",
-    // // "#39b185",
-    // // "#9ccb86",
-    // //         "#e9e29c",
-    // //         "#eeb479",
-    // //         "#e88471",
-    // //         "#cf597e";
-    //     return d < -2 ? "#009392" :
-    //         d < -1 ? "#39b185" :
-    //             d < 1 ? "#e9e29c":
-    //                 d < 2 ? "#e88471":
-    //                     "#cf597e";
-    // }
-    // else {
-    //     if (curCrop === "corn") {
-    //         return d > 190 ? '#800026' :
-    //             d > 160  ? '#BD0026' :
-    //                 d > 130  ? '#FC4E2A' :
-    //                     d > 100   ? '#FEB24C' :
-    //                         '#FFEDA0';
-    //     }
-    //     else { // soybean
-    //         return d > 60 ? '#800026' :
-    //             d > 55  ? '#BD0026' :
-    //                 d > 50  ? '#FC4E2A' :
-    //                     d > 45   ? '#FEB24C' :
-    //                         '#FFEDA0';
-    //     }
-    // }
-
     return curColorScale(d);
 }
 
@@ -835,8 +807,8 @@ function createLegend(map){
         div.innerHTML += `<strong>${title}</strong><br>`;
 
         // Create SVG for the gradient legend
-        const svgWidth = 200;
-        const svgHeight = 20;
+        const svgWidth = 120;
+        const svgHeight = 12;
         const svg = d3.create("svg")
             .attr("width", svgWidth)
             .attr("height", svgHeight);
@@ -1009,7 +981,7 @@ var locations = ['Cuming County', 'Lancaster County', 'Nuckolls County', 'Minneh
 /*initiate the autocomplete function on the "myInput" element, and pass along the countries array as possible autocomplete values:*/
 // autocomplete(document.getElementById("locationInput"), locations);
 // autocomplete(document.getElementById("modelLocationInput"), locations);
-// autocomplete(document.getElementById("plotCountyIn"), locations);
+autocomplete(document.getElementById("plotCountyInput"), locations);
 // autocomplete(document.getElementById("locationInput"), locations);
 
 function autocomplete(inp, arr) {
@@ -1147,14 +1119,21 @@ function applySetting() {
 
 function updateTable(){
     let t = curResponse.features.map(d=>
-        d={NAME:d.properties.NAME,
+        d={County:d.properties.NAME,
+            State:d.properties.STATE,
             FIPS:d.properties.FIPS,
-            YIELD:d.properties.yield,
-            PREDICTION:d.properties.pred,
-            ERROR:d.properties.error})
+            Yield:(d.properties.yield).toFixed(2),
+            Prediction:d.properties.pred.toFixed(2),
+            Error:d.properties.error.toFixed(2),
+            'Uncertainty(%)':(d.properties.error/d.properties.yield*100).toFixed(2)
+    })
+
+    if ($('#filterStateIn').val() !== 'all') {
+        t = t.filter(d=>d.State === $('#filterStateIn option:selected').text())
+    }
 
     var table = new Tabulator("#table-view",{
-        data:t,
+        data:t.map(d=>d={County:d.County, Yield:d.Yield, Prediction:d.Prediction, Error:d.Error, 'Uncertainty(%)':d["Uncertainty(%)"], FIPS:d.FIPS}),
         autoColumns: true,
         height:"311px",
     })
@@ -1408,7 +1387,113 @@ function downloadFunc(divID){
             mapdiv.style.height = '100vh'
 
         });
+}
 
+function previewFunc(divID){
+    let heading;
+    const mapdiv = document.getElementById('map');
+    if (divID === 'mapid'){
+        if (!(document.getElementById("baseMapOn").checked)){
+            // console.log("baseMapOff")
+            curTileLayer.remove()
+        }
+
+
+        const bigDiv = document.getElementById('mapid')
+
+        heading = document.createElement("div")
+        heading.className = "heading"
+
+        userTitile = document.getElementById("userTitle").value
+        console.log(userTitile)
+        heading.innerHTML =  (userTitile===''?"<h3>Crop Yield Prediction Map</h3>":("<h3>"+userTitile+"</h3>") )+
+            "Crop Type: "+(curCrop==="corn"?"Corn":"Soybean")+"&nbsp;&nbsp; Year: "+curYear+"  &nbsp;&nbsp;    Date: "+curDate[curMonth]+""
+            +"<br> "+document.getElementById("userDescription").value
+
+        heading.style.backgroundColor = document.getElementById("colorPicker").value;
+
+        const leftSVG = northArrow()
+        const rightSVG = scaleBar()
+        // Position the SVG nodes using JavaScript
+        leftSVG.style.position = "absolute";
+        leftSVG.style.left = "30";
+        leftSVG.style.top = "40";
+        // leftSVG.style.transform = "translateY(-50%)";
+
+        rightSVG.style.position = "absolute";
+        // rightSVG.style.right = "-100";
+        rightSVG.style.top = "60";
+        rightSVG.style.left = (window.innerWidth-300)+"px";
+        // rightSVG.style.transform = "translateY(-50%)";
+
+        // Insert the SVG nodes into the heading container
+        heading.insertBefore(leftSVG, heading.firstChild);
+        heading.appendChild(rightSVG);
+
+        var selectedFont = document.getElementById("fontSelect").value;
+
+        switch (selectedFont) {
+            case "Arial":
+                heading.style.fontFamily = "Arial, sans-serif";
+                break;
+            case "Times New Roman":
+                heading.style.fontFamily = "Times New Roman, serif";
+                break;
+            case "Verdana":
+                heading.style.fontFamily = "Verdana, sans-serif";
+                break;
+            case "Helvetica":
+                heading.style.fontFamily = "Helvetica, sans-serif";
+                break;
+            case "Georgia":
+                heading.style.fontFamily = "Georgia, serif";
+                break;
+            default:
+                heading.style.fontFamily = "Arial, sans-serif";
+        }
+
+        curLegend.setPosition('topright')
+        curInfo.setPosition('bottomleft')
+        drawControl.setPosition('bottomleft')
+        bigDiv.insertBefore(heading,bigDiv.firstChild)
+
+
+
+        mapdiv.style.width = '100%'
+        mapdiv.style.height = '100vh'
+
+    }
+
+    domtoimage
+        .toJpeg(document.getElementById(divID), { filter:filter })
+        // .toJpeg(document.getElementById(divID))
+        .then(function (dataUrl) {
+            // in new page
+            // var imgWindow = window.open("");
+            // imgWindow.document.write('<img src="' + dataUrl + '" style="width:100%; height:auto;">');
+
+            // Settings for the popup window
+            var windowFeatures = "width=800,height=600,scrollbars=yes,resizable=yes,status=yes";
+
+            // Open a new popup window with specified features
+            var imgWindow = window.open("", "_blank", windowFeatures);
+            imgWindow.document.write('<img src="' + dataUrl + '" style="width:100%; height:auto; display:block; margin:auto;">');
+            imgWindow.document.title = "Image Preview"; // Setting the title of the new window
+            imgWindow.document.close(); // Ensure proper loading and rendering
+
+
+            if(heading){
+                heading.remove()
+                drawControl.setPosition('bottomright')
+                curLegend.setPosition('bottomleft')
+                curInfo.setPosition('topright')
+
+            }
+            curTileLayer.addTo(curMap)
+            mapdiv.style.width = '100vw'
+            mapdiv.style.height = '100vh'
+
+        });
 }
 
 function downloadData(){
@@ -1468,59 +1553,23 @@ d3.csv("data/county.csv",function (data) {
     countyData=data;
 })
 
-// $(document).ready(function (){
-//     $("#plotCountyIn").on("input",function (){
-//
-//         let inName = this.value
-//
-//         let options=''
-//         countyData.forEach(d=>{
-//             if (inName===d.NAMELSAD){
-//                 options += '<option value="'+String(d.STATEFP)+'">'+stateFIPS[d.STATEFP]+'</option>'
-//             }
-//         })
-//         $("#plotStateIn").html(options)
-//
-//     })
-//
-//     $("#modelLocationInput").on("input",function (){
-//
-//         let inName = this.value
-//
-//         let options=''
-//         countyData.forEach(d=>{
-//             if (inName===d.NAMELSAD){
-//                 options += '<option value="'+String(d.STATEFP)+'">'+stateFIPS[d.STATEFP]+'</option>'
-//             }
-//         })
-//         $("#runModelStateIn").html(options)
-//
-//     })
-//
-//     $("#locationInput").on("input",function (){
-//         let inName = this.value
-//
-//         let options=''
-//         countyData.forEach(d=>{
-//             if (inName===d.NAMELSAD){
-//                 options += '<option value="'+String(d.STATEFP)+'">'+stateFIPS[d.STATEFP]+'</option>'
-//             }
-//         })
-//         $("#runModelStateIn").html(options)
-//
-//     })
-//
-// })
-
 
 function populateDropdowns(){
     const stateDropdown = document.getElementById("runModelStateIn")
+    const filterDropdown = document.getElementById("filterStateIn")
+    const visDropdown = document.getElementById("plotStateIn")
+
     stateDropdown.innerHTML = '<option value="">Select a state</option>'
+    visDropdown.innerHTML = '<option value="">Select a state</option>'
+    filterDropdown.innerHTML = '<option value="all">All</option>'
+
     for (const [fips, stateName] of Object.entries(stateRange)) {
         const option = document.createElement('option');
         option.value = fips;
         option.textContent = stateName;
         stateDropdown.appendChild(option);
+        visDropdown.appendChild(option.cloneNode(true));
+        filterDropdown.appendChild(option.cloneNode(true));
     }
 
     stateDropdown.addEventListener('change', (event) => {
@@ -1541,14 +1590,6 @@ function populateDropdowns(){
         }
     });
 
-    const visDropdown = document.getElementById("plotStateIn")
-    visDropdown.innerHTML = '<option value="">Select a state</option>'
-    for (const [fips, stateName] of Object.entries(stateRange)) {
-        const option = document.createElement('option');
-        option.value = fips;
-        option.textContent = stateName;
-        visDropdown.appendChild(option);
-    }
 
     visDropdown.addEventListener('change', (event) => {
         let tempFIPS =  event.target.value;
@@ -1568,7 +1609,6 @@ function populateDropdowns(){
         }
     });
 
-
 }
 
 /**
@@ -1582,7 +1622,13 @@ function plotFunc(mode='new'){
     var d = d3.csv("data/county.csv", function (data){
         thisFIPS = data.filter(function (row) {
             // if (Number(row["STATEFP"]) === Number($("#plotStateIn").val()) && row["NAMELSAD"]===$("#plotCountyIn").val() ) {
-            if (Number(row["GEOID"]) === Number($("#plotCountyIn").val()) ) {
+            if (document.getElementById("plotCountyInput").value === '' && $("#plotCountyIn").val()!=null && Number(row["GEOID"]) === Number($("#plotCountyIn").val()) ) {
+                curFIPS = row.GEOID
+                curLocation = row["NAMELSAD"]
+                document.getElementById("reportTitle").innerHTML = "Historical Yield of "+curLocation
+                scatterGen("scatterP",Number(row.GEOID),mode)
+                return row.GEOID;
+            } else if (row["NAMELSAD"]===$("#plotCountyInput").val() ) {
                 curFIPS = row.GEOID
                 curLocation = row["NAMELSAD"]
                 document.getElementById("reportTitle").innerHTML = "Historical Yield of "+curLocation

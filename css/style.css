@@ -13,8 +13,8 @@ body{
 
 #map .leaflet-bottom.leaflet-left {
     right: auto;               /* Center align the control container */
-    transform: translateX(-50%); /* Use transform to precisely center the div */
-    left: 50%;            /* Disable the default right positioning */
+    transform: translateX(-85%); /* Use transform to precisely center the div */
+    left: 85%;            /* Disable the default right positioning */
 }
 
 /*.leaflet-control {*/
@@ -52,14 +52,16 @@ body{
 }
 
 .legend {
-    line-height: 36px;
+    /*line-height: 36px;*/
+    padding:6px;
+    font: 15px/16px Arial, Helvetica, sans-serif;
     color: #555;
 }
 .legend i {
     width: 36px;
     height: 36px;
     float: left;
-    margin-right: 16px;
+    margin-right: 8px;
     opacity: 0.7;
 }
 
@@ -102,14 +104,14 @@ body{
 .btn {
     border: none;
     background-color: #eeeeee;
-    padding: 7px 14px;
-    font-size: 18px;
+    padding: 7px 7px;
+    font-size: 16px;
     font-weight: bold;
     cursor: pointer;
     display: inline-block;
     border-radius: 5px;
-    -webkit-transition-duration: 0.4s;
-    transition-duration: 0.4s;
+    -webkit-transition-duration: 0.1s;
+    transition-duration: 0.1s;
 }
 
 
