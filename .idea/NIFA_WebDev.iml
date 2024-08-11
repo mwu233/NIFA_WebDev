@@ -30,5 +30,8 @@
     <orderEntry type="library" name="proj4leaflet" level="application" />
     <orderEntry type="library" name="tabulator-tables" level="application" />
     <orderEntry type="library" name="font-awesome" level="application" />
+    <orderEntry type="library" name="leaflet.markercluster" level="application" />
+    <orderEntry type="library" name="toastify-js" level="application" />
+    <orderEntry type="library" name="d3-quadtree.v2" level="application" />
   </component>
 </module>
