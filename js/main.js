@@ -24,6 +24,8 @@ var customStartColor = defaultStartColor;
 var customEndColor = defaultEndColor;
 let statesData; //State boundaries
 
+var curInfoVisible = true;
+
 /**
  * Load all data needed for the application initialization.
  * @returns {Promise<{countyBoundaries: any, averagePred: [], statesData: any}>}
@@ -519,8 +521,6 @@ function processData(data){
     return properties;
 }
 
-
-
 function createChoropleth(data, map, attrs, idx){
     // remove current layer if exists
     if (curLayer){
@@ -879,24 +879,29 @@ function createHoverControl(response, map, attrs){
     var info = L.control();
 
     info.onAdd = function (map) {
-        var container = L.DomUtil.create('div', 'info'); // create a div with a class "info"
-
-        //add temporal legend div to container
+        var container = L.DomUtil.create('div', 'info');
         $(container).append('<div id="temporal-info">');
-
         return container;
     };
 
     curInfo = info;
-    curInfo.addTo(map);
+
+    // Only add curInfo to the map if it should be visible
+    if (curInfoVisible) {
+        curInfo.addTo(map);
+    }
 
     var content = "<h4>Crop Yield Information</h4>" + "Hover over a county";
     updateTemporalInfo(content);
 }
 
-function updateTemporalInfo(content,update=false){
-    // if(highlightedLayers.length>0 ) return
-    $('#temporal-info').html(content);
+function updateTemporalInfo(content, update=false){
+    if (curInfoVisible) {
+        $('#temporal-info').html(content);
+        // if (!curMap.hasControl(curInfo)) {
+        //     curInfo.addTo(curMap);
+        // }
+    }
 }
 
 function createLegend(map){
@@ -1077,11 +1082,25 @@ function toggleTable() {
 
 let sidebar;
 let drawFlag = 'normal';
+
+function hideCurInfo() {
+    curInfoVisible = false;
+    if (curInfo) {
+        curMap.removeControl(curInfo);
+    }
+}
+
+function showCurInfo() {
+    curInfoVisible = true;
+    if (curInfo) {
+        curInfo.addTo(curMap);
+    }
+}
+
 /*
 This function overrides the original _onClick function in the sidebar.js file.
 We check if the tab clicked is the 'run' tab, if so, all the behaviors will be different.
 We do so by setting a global variable drawFlag to 'run'.
-
  */
 function createSideMenu(map) {
 
@@ -1110,6 +1129,20 @@ function createSideMenu(map) {
     };
 
     sidebar = L.control.sidebar('sidebar').addTo(map);
+
+    sidebar.on('opening', function() {
+        console.log("Sidebar is opening");
+        // Add your custom code here for when the sidebar opens
+        addControlKeyListeners()
+        hideCurInfo()
+    });
+
+    sidebar.on('closing', function() {
+        console.log("Sidebar is closing");
+        // Add your custom code here for when the sidebar closes
+        removeControlKeyListeners()
+        showCurInfo()
+    });
 
 }
 
