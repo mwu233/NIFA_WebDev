@@ -18,19 +18,77 @@ let stateRange;
 let curColorScale;
 
 let statesData; //State boundaries
-$.ajax("data/gz_2010_us_040_00_20m.json", {
-    dataType: "json",
-    success: function(response){
-        statesData = response;
+
+// Define a cache object
+// const dataCache = {
+//     statesData: null,
+//     countyBoundaries: null,
+//     averagePred: null
+// };
+
+/**
+ * Load all data needed for the application initialization.
+ * @returns {Promise<{countyBoundaries: any, averagePred: [], statesData: any}>}
+ */
+const CACHE_VERSION = 1; // Increment this when your data structure changes
+
+async function loadAllData() {
+    try {
+        const cachedData = localStorage.getItem('mapDataCache');
+        if (cachedData) {
+            const parsedCache = JSON.parse(cachedData);
+            if (parsedCache.version === CACHE_VERSION) {
+                console.log("Using cached data");
+                return parsedCache.data;
+            }
+        }
+
+        console.log("Fetching fresh data");
+        const [statesResponse, countiesResponse, averagePredResponse] = await Promise.all([
+            fetch("data/gz_2010_us_040_00_20m.json"),
+            fetch("data/gz_2010_us_050_00_20m.json"),
+            fetch("data/average_pred.csv")
+        ]);
+
+        const statesData = await statesResponse.json();
+        const countyBoundaries = await countiesResponse.json();
+        const averagePredText = await averagePredResponse.text();
+        const averagePred = d3.csvParse(averagePredText);
+
+        const data = { statesData, countyBoundaries, averagePred };
+
+        // Cache the data
+        localStorage.setItem('mapDataCache', JSON.stringify({
+            version: CACHE_VERSION,
+            timestamp: new Date().getTime(),
+            data: data
+        }));
+
+        return data;
+    } catch (error) {
+        console.error("Error loading data:", error);
+        throw error;
     }
-})
-let countyBoundaries; //County boundaries
-$.ajax("data/gz_2010_us_050_00_20m.json", {
-    dataType: "json",
-    success: function(response){
-        countyBoundaries = response;
-    }
-})
+}
+
+// TODO: to remove AJAX calls and use the data loaded from loadAllData
+// $.ajax("data/gz_2010_us_040_00_20m.json", {
+//     dataType: "json",
+//     success: function(response){
+//         statesData = response;
+//     }
+// })
+// let countyBoundaries; //County boundaries
+// $.ajax("data/gz_2010_us_050_00_20m.json", {
+//     dataType: "json",
+//     success: function(response){
+//         countyBoundaries = response;
+//     }
+// })
+// d3.csv("data/average_pred.csv", function(data) {
+//     avePred= data;
+// })
+
 
 var curDate = {
     "0": "05/13",
@@ -56,11 +114,12 @@ function DrawnFeature(id,layer,type,intersectCounty,intersectFIPS){
     this.intersectCounty = intersectCounty;
     this.intersectFIPS = intersectFIPS;
 }
-d3.csv("data/average_pred.csv", function(data) {
-    avePred= data;
-})
+
 //function to instantiate the Leaflet map
-function createMap(){
+async function createMap(){
+
+    const data = await loadAllData();
+
     //create the map
     var map = L.map('map', {
         center: [43,-93],
@@ -73,6 +132,7 @@ function createMap(){
     });
 
     map.doubleClickZoom.disable();
+
     curMap = map;
 
     zoomControl = L.control.zoom({
@@ -95,6 +155,12 @@ function createMap(){
     curMonth = '0'; // 0-9
     curProperty = 'pred'; // or 'yield', 'error'- color scheme should be different
     curLocation = '';
+
+    // Use the loaded data
+
+    statesData = data.statesData;
+    countyBoundaries = data.countyBoundaries;
+    avePred = data.averagePred;
 
     //call getData function
     getData(curMap, curCrop, curYear, curMonth, curLocation);
@@ -180,6 +246,9 @@ function createMap(){
         updateDrawnFeaturesDict()
     })
 }
+
+// Call createMap when the document is ready
+document.addEventListener('DOMContentLoaded', createMap);
 
 function removeAllDrawn(){
     drawnFeatures.clearLayers();
@@ -289,16 +358,110 @@ function changeBaseMap(){
 //function to retrieve the data and place it on the map
 function getData(map, crop, year, month, location){
     //load the data
-    var jsonPath = "data/" + crop + "/" + year + "/" + month + ".json";
+    // var jsonPath = "data/" + crop + "/" + year + "/" + month + ".json";
+    var jsonPath = `data/${crop}/${year}/${month}.json`;
 
+    // TODO: to remove AJAX and use fetch API below
     // $.ajax("data/crop_2020.json", {
-    $.ajax(jsonPath, {
-        dataType: "json",
-        success: function(response){
-            // create an attributes array
+    // $.ajax(jsonPath, {
+    //     dataType: "json",
+    //     success: function(response){
+    //         // create an attributes array
+    //         var attributes = processData(response);
+    //
+    //         // update global variables curAttrs and curResponse
+    //         curAttrs = attributes;
+    //         curResponse = response;
+    //
+    //         stateRange = {}
+    //         curResponse.features.forEach(a=>{
+    //             let temp = a.properties.FIPS.toString();
+    //             if (temp.length=== 4) {
+    //                 temp = '0'+ temp;
+    //             }
+    //             temp = temp.slice(0,2);
+    //
+    //             stateRange[temp] = stateFIPS[temp];
+    //             a.properties.STATE = stateFIPS[temp];
+    //         })
+    //
+    //         if (curProperty === "pred") {
+    //             curColorScale = d3.scaleLinear()
+    //                 .domain([d3.min(curResponse.features, function(d) { return d.properties.pred; }), d3.max(curResponse.features, function(d) { return d.properties.pred; })])
+    //                 .range(["#ebf8b3", "#074359"]);}
+    //         else if (curProperty === "yield") {
+    //             curColorScale = d3.scaleLinear()
+    //                 .domain([d3.min(curResponse.features, function(d) { return d.properties.yield; }), d3.max(curResponse.features, function(d) { return d.properties.yield; })])
+    //                 .range(["#ebf8b3", "#459f83"]);
+    //         } else if (curProperty === "error") {
+    //             curColorScale = d3.scaleLinear()
+    //                 .domain([d3.min(curResponse.features, function(d) { return d.properties.error; }),0, d3.max(curResponse.features, function(d) { return d.properties.error; })])
+    //                 .range(["#009392", "#ebf8b3","#cf597e"]);
+    //         }
+    //
+    //         populateDropdowns();
+    //
+    //         updateTable();
+    //
+    //         curLayer = createChoropleth(response, map, attributes, 0);
+    //         map.addLayer(curLayer);
+    //
+    //         L.geoJson(countyBoundaries, {
+    //             'type': 'Feature',
+    //             style:{
+    //                 weight: 1,
+    //                 fill: false,
+    //                 color: 'gray',
+    //                 dashArray: '3',
+    //             }}).addTo(curMap);
+    //         //US States Boundary layer
+    //         L.geoJson(statesData, {
+    //             'type': 'Feature',
+    //             style:{
+    //                 weight: 3,
+    //                 fill: false,
+    //                 color: 'grey',
+    //                 dashArray: '3',
+    //             }
+    //         }).addTo(curMap);
+    //
+    //         // update map extent
+    //         if (location != '') {
+    //             // update map extent
+    //             curLayer.eachLayer(function (layer) {
+    //                 if (layer.feature.properties.NAMELSAD === location) {
+    //                     // Zoom to that layer.
+    //                     map.fitBounds(layer.getBounds());
+    //                 }
+    //             });
+    //         } else {
+    //             map.setView({lat:43, lng:-93}, 5.5)
+    //         }
+    //
+    //         // create control
+    //         createHoverControl(response, map, attributes);
+    //         // createSequenceControls(response, map, attributes); //add response here
+    //
+    //         // create legend
+    //         createLegend(map);
+    //
+    //         // // update legend
+    //         // updateLegend(map, attributes[0]);
+    //
+    //         createSideMenu(map);
+    //
+    //         createMenu(map);
+    //
+    //     }
+    // });
+
+    fetch(jsonPath)
+        .then(response => response.json())
+        .then(response => {
+            // Create an attributes array
             var attributes = processData(response);
 
-            // update global variables curAttrs and curResponse
+            // Update global variables
             curAttrs = attributes;
             curResponse = response;
 
@@ -335,18 +498,20 @@ function getData(map, crop, year, month, location){
             curLayer = createChoropleth(response, map, attributes, 0);
             map.addLayer(curLayer);
 
+            // Use the loaded state and county data
             L.geoJson(countyBoundaries, {
                 'type': 'Feature',
-                style:{
+                style: {
                     weight: 1,
                     fill: false,
                     color: 'gray',
                     dashArray: '3',
-                }}).addTo(curMap);
-            //US States Boundary layer
+                }
+            }).addTo(curMap);
+
             L.geoJson(statesData, {
                 'type': 'Feature',
-                style:{
+                style: {
                     weight: 3,
                     fill: false,
                     color: 'grey',
@@ -381,8 +546,12 @@ function getData(map, crop, year, month, location){
 
             createMenu(map);
 
-        }
-    });
+        })
+        .catch(error => {
+            console.error("Error fetching data:", error);
+            // Handle the error appropriately
+        });
+
 }
 
 function processData(data){
