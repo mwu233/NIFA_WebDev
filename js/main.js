@@ -13,10 +13,15 @@ var curCrop;
 var curYear;
 var curMonth;
 var curProperty;
+var currentBaseMap = "OpenStreetMap";
+
 let curFIPS;
 let stateRange;
 let curColorScale;
-
+var defaultStartColor = "#ebf8b3";
+var defaultEndColor = "#074359";
+var customStartColor = defaultStartColor;
+var customEndColor = defaultEndColor;
 let statesData; //State boundaries
 
 /**
@@ -298,7 +303,48 @@ function fitBoundsByID(id){
     curMap.fitBounds(layer.getBounds())
 }
 
-function changeBaseMap(){
+// function changeBaseMap(){
+//     // var basemaps = {
+//     //     'OpenStreetMap': L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+//     //         maxZoom: 19,
+//     //         attribution: '© OpenStreetMap contributors'
+//     //     }),
+//     //     'CartoDB Positron': L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}.png', {
+//     //         maxZoom: 19,
+//     //         attribution: '© CartoDB'
+//     //     }),
+//     //     'Esri WorldTerrain':  L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Terrain_Base/MapServer/tile/{z}/{y}/{x}', {
+//     //         attribution: 'Tiles &copy; Esri &mdash; Source: USGS, Esri, TANA, DeLorme, and NPS',
+//     //         maxZoom: 13
+//     //     }),
+//     //     'USGS USTopo': L.tileLayer('https://basemap.nationalmap.gov/arcgis/rest/services/USGSTopo/MapServer/tile/{z}/{y}/{x}', {
+//     //         maxZoom: 20,
+//     //         attribution: 'Tiles courtesy of the <a href="https://usgs.gov/">U.S. Geological Survey</a>'
+//     //     }),
+//     //     'Esri WorldShadedRelief':L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Shaded_Relief/MapServer/tile/{z}/{y}/{x}', {
+//     //         attribution: 'Tiles &copy; Esri &mdash; Source: Esri',
+//     //         maxZoom: 13
+//     //     }),
+//     //     'Esri NatGeoWorldMap': L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/NatGeo_World_Map/MapServer/tile/{z}/{y}/{x}', {
+//     //         attribution: 'Tiles &copy; Esri &mdash; National Geographic, Esri, DeLorme, NAVTEQ, UNEP-WCMC, USGS, NASA, ESA, METI, NRCAN, GEBCO, NOAA, iPC',
+//     //         maxZoom: 16
+//     //     })
+//     // };
+//     // curTileLayer = basemaps[$('#basemapInput').val()]
+//     //     curTileLayer.addTo(curMap);
+//
+//
+// }
+
+function changeBaseMap(selectedBaseMap) {
+    if (selectedBaseMap === undefined) {
+    selectedBaseMap=$('#basemapInput').val()
+    }
+
+    if (curTileLayer) {
+        curMap.removeLayer(curTileLayer);
+    }
+
     var basemaps = {
         'OpenStreetMap': L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
             maxZoom: 19,
@@ -308,26 +354,26 @@ function changeBaseMap(){
             maxZoom: 19,
             attribution: '© CartoDB'
         }),
-        'Esri WorldTerrain':  L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Terrain_Base/MapServer/tile/{z}/{y}/{x}', {
+        'Esri WorldTerrain': L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Terrain_Base/MapServer/tile/{z}/{y}/{x}', {
             attribution: 'Tiles &copy; Esri &mdash; Source: USGS, Esri, TANA, DeLorme, and NPS',
             maxZoom: 13
         }),
-        'USGS USTopo': L.tileLayer('https://basemap.nationalmap.gov/arcgis/rest/services/USGSTopo/MapServer/tile/{z}/{y}/{x}', {
-            maxZoom: 20,
-            attribution: 'Tiles courtesy of the <a href="https://usgs.gov/">U.S. Geological Survey</a>'
-        }),
-        'Esri WorldShadedRelief':L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Shaded_Relief/MapServer/tile/{z}/{y}/{x}', {
+        'Esri WorldShadedRelief': L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Shaded_Relief/MapServer/tile/{z}/{y}/{x}', {
             attribution: 'Tiles &copy; Esri &mdash; Source: Esri',
             maxZoom: 13
         }),
         'Esri NatGeoWorldMap': L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/NatGeo_World_Map/MapServer/tile/{z}/{y}/{x}', {
             attribution: 'Tiles &copy; Esri &mdash; National Geographic, Esri, DeLorme, NAVTEQ, UNEP-WCMC, USGS, NASA, ESA, METI, NRCAN, GEBCO, NOAA, iPC',
             maxZoom: 16
+        }),
+        'USGS USTopo': L.tileLayer('https://basemap.nationalmap.gov/arcgis/rest/services/USGSTopo/MapServer/tile/{z}/{y}/{x}', {
+            maxZoom: 20,
+            attribution: 'Tiles courtesy of the <a href="https://usgs.gov/">U.S. Geological Survey</a>'
         })
     };
-    curTileLayer = basemaps[$('#basemapInput').val()]
-        curTileLayer.addTo(curMap);
 
+    curTileLayer = basemaps[selectedBaseMap];
+    curTileLayer.addTo(curMap);
 }
 
 //function to retrieve the data and place it on the map
@@ -358,18 +404,37 @@ function getData(map, crop, year, month, location){
                 a.properties.STATE = stateFIPS[temp];
             })
 
+            // TODO: REMOVE THIS
+            // if (curProperty === "pred") {
+            //     curColorScale = d3.scaleLinear()
+            //         .domain([d3.min(curResponse.features, function(d) { return d.properties.pred; }), d3.max(curResponse.features, function(d) { return d.properties.pred; })])
+            //         .range(["#ebf8b3", "#074359"]);}
+            // else if (curProperty === "yield") {
+            //     curColorScale = d3.scaleLinear()
+            //         .domain([d3.min(curResponse.features, function(d) { return d.properties.yield; }), d3.max(curResponse.features, function(d) { return d.properties.yield; })])
+            //         .range(["#ebf8b3", "#459f83"]);
+            // } else if (curProperty === "error") {
+            //     curColorScale = d3.scaleLinear()
+            //         .domain([d3.min(curResponse.features, function(d) { return d.properties.error; }),0, d3.max(curResponse.features, function(d) { return d.properties.error; })])
+            //         .range(["#009392", "#ebf8b3","#cf597e"]);
+            // }
+
             if (curProperty === "pred") {
                 curColorScale = d3.scaleLinear()
-                    .domain([d3.min(curResponse.features, function(d) { return d.properties.pred; }), d3.max(curResponse.features, function(d) { return d.properties.pred; })])
-                    .range(["#ebf8b3", "#074359"]);}
-            else if (curProperty === "yield") {
+                    .domain([d3.min(curResponse.features, function(d) { return d.properties.pred; }),
+                        d3.max(curResponse.features, function(d) { return d.properties.pred; })])
+                    .range([customStartColor, customEndColor]);
+            } else if (curProperty === "yield") {
                 curColorScale = d3.scaleLinear()
-                    .domain([d3.min(curResponse.features, function(d) { return d.properties.yield; }), d3.max(curResponse.features, function(d) { return d.properties.yield; })])
-                    .range(["#ebf8b3", "#459f83"]);
+                    .domain([d3.min(curResponse.features, function(d) { return d.properties.yield; }),
+                        d3.max(curResponse.features, function(d) { return d.properties.yield; })])
+                    .range([customStartColor, customEndColor]);
             } else if (curProperty === "error") {
+                var errorExtent = d3.extent(curResponse.features, function(d) { return d.properties.error; });
+                var maxAbsError = Math.max(Math.abs(errorExtent[0]), Math.abs(errorExtent[1]));
                 curColorScale = d3.scaleLinear()
-                    .domain([d3.min(curResponse.features, function(d) { return d.properties.error; }),0, d3.max(curResponse.features, function(d) { return d.properties.error; })])
-                    .range(["#009392", "#ebf8b3","#cf597e"]);
+                    .domain([-maxAbsError, 0, maxAbsError])
+                    .range([customStartColor, "#FFFFFF", customEndColor]);
             }
 
             populateDropdowns();
@@ -1980,4 +2045,120 @@ function loadProgress() {
         }
     }
 }
+
+
+// Below is for topnav bar functionallities
+// Get the settings button
+// Get the popup
+document.addEventListener('DOMContentLoaded', function() {
+    var settingsPopup = document.getElementById("settingsPopup");
+    var startColorPicker = document.getElementById("startColorPicker");
+    var endColorPicker = document.getElementById("endColorPicker");
+    var legendPreview = document.getElementById("legendPreview");
+    var resetColorSchemeBtn = document.getElementById("resetColorScheme");
+    var baseMapSelector = document.getElementById("popupBaseMapSelector");
+
+    function updateLegendPreview() {
+        var gradient = `linear-gradient(to right, ${startColorPicker.value}, ${endColorPicker.value})`;
+        legendPreview.style.background = gradient;
+    }
+
+    window.openSettingsPopup = function() {
+        if (settingsPopup) {
+            startColorPicker.value = customStartColor;
+            endColorPicker.value = customEndColor;
+            baseMapSelector.value = currentBaseMap;
+            settingsPopup.style.display = "block";
+            updateLegendPreview();
+        } else {
+            console.error("Settings popup element not found");
+        }
+    }
+
+    if (settingsPopup) {
+        var closeBtn = settingsPopup.querySelector(".close");
+        var applyBtn = document.getElementById("applySettings");
+        var cancelBtn = document.getElementById("cancelSettings");
+
+        function closePopup() {
+            settingsPopup.style.display = "none";
+        }
+
+        if (closeBtn) {
+            closeBtn.onclick = closePopup;
+        }
+
+        if (applyBtn) {
+            applyBtn.onclick = function() {
+                customStartColor = startColorPicker.value;
+                customEndColor = endColorPicker.value;
+                currentBaseMap = baseMapSelector.value;
+                updateColorScheme();
+                changeBaseMap(currentBaseMap);
+                closePopup();
+            }
+        }
+
+        if (cancelBtn) {
+            cancelBtn.onclick = closePopup;
+        }
+
+        if (resetColorSchemeBtn) {
+            resetColorSchemeBtn.onclick = function() {
+                startColorPicker.value = defaultStartColor;
+                endColorPicker.value = defaultEndColor;
+                updateLegendPreview();
+            }
+        }
+
+        startColorPicker.addEventListener('input', updateLegendPreview);
+        endColorPicker.addEventListener('input', updateLegendPreview);
+
+        window.onclick = function(event) {
+            if (event.target === settingsPopup) {
+                closePopup();
+            }
+        }
+    } else {
+        console.error("Settings popup element not found");
+    }
+});
+
+function updateColorScheme() {
+    // Update the color scale
+    if (curProperty === "pred" || curProperty === "yield") {
+        curColorScale = d3.scaleLinear()
+            .domain([d3.min(curResponse.features, function(d) { return d.properties[curProperty]; }),
+                d3.max(curResponse.features, function(d) { return d.properties[curProperty]; })])
+            .range([customStartColor, customEndColor]);
+    } else if (curProperty === "error") {
+        var errorExtent = d3.extent(curResponse.features, function(d) { return d.properties.error; });
+        var maxAbsError = Math.max(Math.abs(errorExtent[0]), Math.abs(errorExtent[1]));
+        curColorScale = d3.scaleLinear()
+            .domain([-maxAbsError, 0, maxAbsError])
+            .range([customStartColor, "#FFFFFF", customEndColor]);
+    }
+
+    // Update the map
+    if (curLayer) {
+        curLayer.eachLayer(function (layer) {
+            if (layer.feature) {
+                layer.setStyle({
+                    fillColor: curColorScale(layer.feature.properties[curProperty])
+                });
+            }
+        });
+    }
+
+    // Update the legend
+    updateLegend();
+}
+
+function updateLegend() {
+    if (curLegend) {
+        curMap.removeControl(curLegend);
+    }
+    createLegend(curMap);
+}
+
 

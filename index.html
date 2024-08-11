@@ -23,7 +23,7 @@
     </style>
 </head>
 
-<body >
+<body>
     <div id="bar" class="topnav">
     <a class="active">&nbsp&nbsp Crop Yield Prediction &nbsp&nbsp</a>
     <a href="#profile" role="tab"><i class="fa-solid fa-users"></i></a>
@@ -31,7 +31,47 @@
     <a href="#tablepop" role="tab"><i class="fa fa-table" onclick="toggleTable()"></i></a>
     <a role="tab"><i class="fa fa-chart-line" ></i></a>
     <a role="tab"><i class="fa fa-map-location-dot" ></i></a>
-    <a role="tab"><i class="fa fa-gears" ></i></a>
+    <a role="tab" id="settingsBtn" onclick="openSettingsPopup()"><i class="fa fa-gears"></i></a>
+        <!--    settings popup-->
+        <div id="settingsPopup" class="popup">
+            <div class="popup-content">
+                <span class="close">&times;</span>
+                <h2>Settings</h2>
+
+                <div class="settings-section">
+                    <h3>Choropleth Color Scheme</h3>
+                    <div class="color-selectors">
+                        <label>
+                            Start Color:
+                            <input type="color" id="startColorPicker" value="#ebf8b3">
+                        </label>
+                        <label>
+                            End Color:
+                            <input type="color" id="endColorPicker" value="#074359">
+                        </label>
+                    </div>
+                    <div id="legendPreview"></div>
+                    <button id="resetColorScheme" class="secondary-button">Reset to Default</button>
+                </div>
+
+                <div class="settings-section">
+                    <h3>Base Map</h3>
+                    <select id="popupBaseMapSelector">
+                        <option value="OpenStreetMap">OpenStreetMap</option>
+                        <option value="CartoDB Positron">CartoDB Positron</option>
+                        <option value="Esri WorldTerrain">Esri WorldTerrain</option>
+                        <option value="Esri WorldShadedRelief">Esri WorldShadedRelief</option>
+                        <option value="Esri NatGeoWorldMap">Esri NatGeoWorldMap</option>
+                        <option value="USGS USTopo">USGS USTopo</option>
+                    </select>
+                </div>
+
+                <div class="popup-buttons">
+                    <button id="applySettings" class="primary-button">Apply</button>
+                    <button id="cancelSettings" class="secondary-button">Cancel</button>
+                </div>
+            </div>
+        </div>
     <a role="tab"><i class="fa-solid fa-trash" onclick="removeAllDrawn()"></i></a>
     <a role="tab"><i class="" ></i></a>
     </div>
@@ -380,7 +420,7 @@
         <div id="map"></div>
     </div>
 
-    <div id="popup" class="popup">
+    <div id="popup" class="progress-popup">
         <div class="progress-container">
             <div class="progress-bar" id="progress-bar"></div>
         </div>
@@ -409,6 +449,7 @@
 
     <script type="text/javascript" src="https://unpkg.com/tabulator-tables@6.2.1/dist/js/tabulator.min.js"></script>
     <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/toastify-js"></script>
+
 
 </body>
 </html>
