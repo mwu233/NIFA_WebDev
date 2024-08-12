@@ -28,7 +28,7 @@
     <a class="active">&nbsp&nbsp Crop Yield Prediction &nbsp&nbsp</a>
     <a href="#profile" role="tab"><i class="fa-solid fa-users"></i></a>
     <a href="https://github.com/mwu233/NIFA_WebDev" role="tab" target="_blank"><i class="fa-brands fa-github "></i></a>
-    <a href="#tablepop" role="tab"><i class="fa fa-table" onclick="toggleTable()"></i></a>
+        <a href="#" role="button" id="tablePopupButton"><i class="fa fa-table"></i></a>
     <a role="tab"><i class="fa fa-chart-line" ></i></a>
     <a role="tab"><i class="fa fa-map-location-dot" ></i></a>
     <a role="tab" id="settingsBtn" onclick="openSettingsPopup()"><i class="fa fa-gears"></i></a>
@@ -79,20 +79,29 @@
 
     <div id="sidebar" class="sidebar collapsed">
         <!-- Nav tabs -->
-        <div class="sidebar-tabs">
-            <ul role="tablist">
-                <li><a href="#run" role="tab" title="Run Model"><i class="fa-solid fa-play-circle fa-lg"></i></a></li>
-                <li><a href="#search" role="tab" title="Data Search"><i class="fa-solid fa-filter fa-lg"></i></a></li>
-                <li><a href="#visualization" role="tab" title="Visualization"><i class="fa-solid fa-chart-simple fa-lg"></i></a></li>
-                <li><a href="#mapping" role="tab" title="Mapping and download"><i class="fa-solid fa-globe fa-lg"></i></a></li>
-<!--                <li><a href="#testtab" role="tab" title="Test Tab"><i class="fa-solid fa-globe fa-lg"></i></a> </li>-->
-            </ul>
+<!--        <div class="sidebar-tabs">-->
+<!--            <ul role="tablist">-->
+<!--                <li><a href="#run" role="tab" title="Run Model"><i class="fa-solid fa-play-circle fa-lg"></i></a></li>-->
+<!--                <li><a href="#search" role="tab" title="Data Search"><i class="fa-solid fa-filter fa-lg"></i></a></li>-->
+<!--                <li><a href="#visualization" role="tab" title="Visualization"><i class="fa-solid fa-chart-simple fa-lg"></i></a></li>-->
+<!--                <li><a href="#mapping" role="tab" title="Mapping and download"><i class="fa-solid fa-globe fa-lg"></i></a></li>-->
+<!--&lt;!&ndash;                <li><a href="#testtab" role="tab" title="Test Tab"><i class="fa-solid fa-globe fa-lg"></i></a> </li>&ndash;&gt;-->
+<!--            </ul>-->
 
-            <ul role="tablist">
-                <li><a href="#reference" role="tab"><i class="fa-solid fa-paperclip"></i></a></li>
-                <li><a href="#profile" role="tab"><i class="fa-solid fa-users fa-lg"></i></a></li>
-            </ul>
-        </div>
+<!--            <ul role="tablist">-->
+<!--                <li><a href="#reference" role="tab"><i class="fa-solid fa-paperclip"></i></a></li>-->
+<!--                <li><a href="#profile" role="tab"><i class="fa-solid fa-users fa-lg"></i></a></li>-->
+<!--            </ul>-->
+<!--        </div>-->
+
+        <ul role="tablist" class="sidebar-tabs">
+            <li><a href="#run" role="tab" data-tooltip="Run Model"><i class="fa fa-play"></i></a></li>
+            <li><a href="#search" role="tab" data-tooltip="Data Search"><i class="fa fa-search"></i></a></li>
+            <li><a href="#visualization" role="tab" data-tooltip="Visualization"><i class="fa fa-chart-bar"></i></a></li>
+            <li><a href="#mapping" role="tab" data-tooltip="Mapping and download"><i class="fa fa-map"></i></a></li>
+            <li><a href="#reference" role="tab" data-tooltip="References"><i class="fa fa-book"></i></a></li>
+            <li><a href="#profile" role="tab" data-tooltip="Profile"><i class="fa fa-user"></i></a></li>
+        </ul>
 
         <!-- Tab panes -->
         <div class="sidebar-content">
@@ -445,7 +454,6 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet.draw/0.4.2/leaflet.draw.js"></script>
     <script src="https://html2canvas.hertzen.com/dist/html2canvas.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/@turf/turf@6/turf.min.js"></script>
-
 
     <script type="text/javascript" src="https://unpkg.com/tabulator-tables@6.2.1/dist/js/tabulator.min.js"></script>
     <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/toastify-js"></script>

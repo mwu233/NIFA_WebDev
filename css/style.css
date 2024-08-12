@@ -116,6 +116,27 @@ body{
     transition-duration: 0.1s;
 }
 
+/*control tooltip for side bar*/
+.custom-tooltip {
+    position: absolute;
+    left: 100%;
+    top: 50%;
+    transform: translateY(-50%);
+    background-color: #333;
+    color: #fff;
+    padding: 5px 10px;
+    border-radius: 4px;
+    font-size: 12px;
+    white-space: nowrap;
+    z-index: 10000; /* Increased z-index */
+    pointer-events: none;
+    opacity: 0;
+    transition: opacity 0.1s;
+}
+
+.sidebar-tabs > li > a:hover .custom-tooltip {
+    opacity: 1;
+}
 
 /* Blue */
 .apply {
@@ -268,7 +289,7 @@ input[type=text]:disabled {
 .settings-section {
     margin-bottom: 20px;
     padding: 15px;
-    background-color: #f9f9f9;
+    background-color: #efefef;
     border-radius: 5px;
 }
 
@@ -332,7 +353,7 @@ input[type=text]:disabled {
 .secondary-button {
     background-color: #f1f1f1;
     color: black;
-    border: 1px solid #ccc;
+    border: 1px solid rgba(0, 0, 0, 0.2);
     padding: 9px 19px;
     text-align: center;
     text-decoration: none;
@@ -341,4 +362,55 @@ input[type=text]:disabled {
     margin: 4px 2px;
     cursor: pointer;
     border-radius: 4px;
+}
+
+/*for table popup*/
+#tablePop {
+    box-shadow: 0 2px 10px rgba(0,0,0,0.2);
+    border-radius: 5px;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+}
+
+#tableHeader {
+    user-select: none;
+}
+
+.close-btn:hover {
+    color: red;
+}
+
+#tableContainer {
+    flex-grow: 1;
+    overflow: auto;
+}
+
+#filterContainer {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+#filterContainer div {
+    display: flex;
+    gap: 10px;
+    align-items: center;
+}
+
+#filterContainer input {
+    width: 100px;
+}
+
+#applyFilters {
+    align-self: flex-start;
+    padding: 5px 10px;
+    background-color: #4CAF50;
+    color: white;
+    border: none;
+    cursor: pointer;
+}
+
+#applyFilters:hover {
+    background-color: #45a049;
 }

@@ -1045,40 +1045,151 @@ window.onresize = function(event) {
 }
 
 let curTable;
+let tableDiv;
+
 function toggleTable() {
-    if(!curTable){
-
-        let tableDiv = document.createElement('div');
+    if (!tableDiv) {
+        // Create the table div if it doesn't exist
+        tableDiv = document.createElement('div');
         tableDiv.id = 'tablePop';
-        tableDiv.style.width = '300px';
-        tableDiv.style.height = '300px';
-        tableDiv.style.overflow = 'auto';
-        tableDiv.style.position = 'absolute';
-        curTable = L.Draggable(tableDiv).addTo(curMap);
-        curTable.enable();
-        let t = curResponse.features.map(d=>
-            d={NAME:d.properties.NAME,
-                FIPS:d.properties.FIPS,
-                YIELD:d.properties.yield,
-                PREDICTION:d.properties.pred,
-                ERROR:d.properties.error})
+        tableDiv.style.width = '500px';
+        tableDiv.style.height = '500px';
+        tableDiv.style.overflow = 'hidden';
+        tableDiv.style.position = 'fixed';
+        tableDiv.style.top = '50px';
+        tableDiv.style.left = '50px';
+        tableDiv.style.backgroundColor = 'white';
+        tableDiv.style.border = '1px solid #ccc';
+        tableDiv.style.zIndex = '9999';
+        tableDiv.style.display = 'none';
+        tableDiv.style.flexDirection = 'column';
+        document.body.appendChild(tableDiv);
 
-        var table = new Tabulator("#tablePop",{
-            data:t,
-            autoColumns: true,
-            height:"280px",
-        })
+        // Add a header for dragging and title
+        const header = document.createElement('div');
+        header.id = 'tableHeader';
+        header.style.padding = '10px';
+        header.style.backgroundColor = '#f1f1f1';
+        header.style.cursor = 'move';
+        header.style.display = 'flex';
+        header.style.justifyContent = 'space-between';
+        header.style.alignItems = 'center';
+        header.innerHTML = '<span>Data Table</span><span class="close-btn" style="cursor:pointer;">×</span>';
+        tableDiv.appendChild(header);
 
+        // Add a container for filters
+        const filterContainer = document.createElement('div');
+        filterContainer.id = 'filterContainer';
+        filterContainer.style.padding = '10px';
+        filterContainer.innerHTML = `
+            <div>
+                <label for="yieldMin">Yield Min:</label>
+                <input type="number" id="yieldMin" placeholder="Min Yield">
+                <label for="yieldMax">Yield Max:</label>
+                <input type="number" id="yieldMax" placeholder="Max Yield">
+            </div>
+            <div>
+                <label for="predictionMin">Prediction Min:</label>
+                <input type="number" id="predictionMin" placeholder="Min Prediction">
+                <label for="predictionMax">Prediction Max:</label>
+                <input type="number" id="predictionMax" placeholder="Max Prediction">
+            </div>
+            <button id="applyFilters">Apply Filters</button>
+        `;
+        tableDiv.appendChild(filterContainer);
 
+        // Add a container for the Tabulator table
+        const tableContainer = document.createElement('div');
+        tableContainer.id = 'tableContainer';
+        tableContainer.style.height = 'calc(100% - 100px)';
+        tableContainer.style.overflow = 'auto';
+        tableDiv.appendChild(tableContainer);
+
+        // Make the div draggable and resizable
+        $(tableDiv).draggable({
+            handle: '#tableHeader',
+            containment: 'window'
+        }).resizable({
+            minHeight: 200,
+            minWidth: 200,
+            handles: 'all',
+            resize: function(event, ui) {
+                if (curTable) {
+                    curTable.setHeight(ui.size.height - 100);
+                }
+            }
+        });
+
+        // Add close functionality
+        header.querySelector('.close-btn').addEventListener('click', () => {
+            tableDiv.style.display = 'none';
+        });
+
+        // Add filter functionality
+        document.getElementById('applyFilters').addEventListener('click', applyFilters);
     }
 
-    if(curTable.isOpen()){
-        curTable.close();
-    }
-    else{
-        curTable.open();
+    // Toggle the visibility of the table
+    if (tableDiv.style.display === 'none') {
+        tableDiv.style.display = 'flex';
+        updateTableContent();
+    } else {
+        tableDiv.style.display = 'none';
     }
 }
+
+function updateTableContent() {
+    const tableContainer = document.getElementById('tableContainer');
+
+    // Clear existing table if any
+    if (curTable) {
+        curTable.destroy();
+    }
+
+    // Check if data is available
+    if (curResponse && curResponse.features && curResponse.features.length > 0) {
+        // Create the Tabulator table
+        curTable = new Tabulator("#tableContainer", {
+            data: curResponse.features.map(d => ({
+                NAME: d.properties.NAME,
+                FIPS: d.properties.FIPS,
+                YIELD: d.properties.yield,
+                PREDICTION: d.properties.pred,
+                ERROR: d.properties.error
+            })),
+            columns: [
+                {title: "Name", field: "NAME", headerFilter: "input"},
+                {title: "FIPS", field: "FIPS", headerFilter: "input"},
+                {title: "Yield", field: "YIELD", headerFilter: "input"},
+                {title: "Prediction", field: "PREDICTION", headerFilter: "input"},
+                {title: "Error", field: "ERROR", headerFilter: "input"}
+            ],
+            layout: "fitColumns",
+            height: "100%"
+        });
+    } else {
+        tableContainer.innerHTML = '<p style="padding: 20px;">No data available. Please load data first.</p>';
+    }
+}
+
+function applyFilters() {
+    if (curTable) {
+        const yieldMin = parseFloat(document.getElementById('yieldMin').value);
+        const yieldMax = parseFloat(document.getElementById('yieldMax').value);
+        const predictionMin = parseFloat(document.getElementById('predictionMin').value);
+        const predictionMax = parseFloat(document.getElementById('predictionMax').value);
+
+        curTable.setFilter([
+            {field: "YIELD", type: ">=", value: yieldMin || 0},
+            {field: "YIELD", type: "<=", value: yieldMax || Number.MAX_VALUE},
+            {field: "PREDICTION", type: ">=", value: predictionMin || 0},
+            {field: "PREDICTION", type: "<=", value: predictionMax || Number.MAX_VALUE}
+        ]);
+    }
+}
+
+// Add event listener to the button
+document.getElementById('tablePopupButton').addEventListener('click', toggleTable);
 
 let sidebar;
 let drawFlag = 'normal';
@@ -2193,5 +2304,28 @@ function updateLegend() {
     }
     createLegend(curMap);
 }
+
+// tooltip
+document.addEventListener('DOMContentLoaded', function() {
+    const sidebarTabs = document.querySelectorAll('.sidebar-tabs > li > a');
+
+    sidebarTabs.forEach(tab => {
+        const tooltip = document.createElement('div');
+        tooltip.className = 'custom-tooltip';
+        tooltip.textContent = tab.getAttribute('data-tooltip');
+        document.body.appendChild(tooltip); // Append to body instead of tab
+
+        tab.addEventListener('mouseenter', function(e) {
+            const rect = this.getBoundingClientRect();
+            tooltip.style.left = `${rect.right + 10}px`;
+            tooltip.style.top = `${rect.top + rect.height / 2}px`;
+            tooltip.style.opacity = '1';
+        });
+
+        tab.addEventListener('mouseleave', function() {
+            tooltip.style.opacity = '0';
+        });
+    });
+});
 
 
