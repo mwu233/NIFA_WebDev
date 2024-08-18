@@ -2328,4 +2328,23 @@ document.addEventListener('DOMContentLoaded', function() {
     });
 });
 
+function openReferencePopup() {
+    document.getElementById('referencePopup').style.display = 'block';
+}
+
+function openProfilePopup() {
+    document.getElementById('profilePopup').style.display = 'block';
+}
+
+function closePopup(popupId) {
+    document.getElementById(popupId).style.display = 'none';
+}
+
+// Close popup when clicking outside of it
+window.onclick = function(event) {
+    if (event.target.className === 'popup') {
+        event.target.style.display = 'none';
+    }
+}
+
 
