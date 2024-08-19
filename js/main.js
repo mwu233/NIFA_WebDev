@@ -92,6 +92,7 @@ let avePred;
 let drawControl;
 let drawnFeatures = new L.FeatureGroup();
 let drawnFeaturesDict = {};
+let markerDrawHandler;
 function DrawnFeature(id,layer,type,intersectCounty,intersectFIPS){
     this.id = id;
     this.layer = layer;
@@ -111,7 +112,7 @@ async function createMap(){
     var map = L.map('map', {
         center: [43,-93],
         zoom: 5.5,
-        zoomDelta: 0.25,
+        zoomDelta: 0.5,
         zoomSnap: 0,
         zoomControl: false,
         maxBounds: [[20,-130],[52,-60]],
@@ -125,10 +126,10 @@ async function createMap(){
 
     curMap = map;
 
-    zoomControl = L.control.zoom({
-        position: 'topright'
-
-    }).addTo(map);
+    // zoomControl = L.control.zoom({
+    //     position: 'topright'
+    //
+    // }).addTo(map);
     //add OSM base tilelayer
     curTileLayer = L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
         attribution: '&copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a>',
@@ -154,6 +155,30 @@ async function createMap(){
 
     //call getData function
     getData(curMap, curCrop, curYear, curMonth, curLocation);
+
+
+// Add custom zoom controls
+    var zoomInBtn = document.getElementById('zoomInBtn');
+    var zoomOutBtn = document.getElementById('zoomOutBtn');
+
+    zoomInBtn.addEventListener('click', function(e) {
+        e.preventDefault();
+        curMap.zoomIn();
+    });
+
+    zoomOutBtn.addEventListener('click', function(e) {
+        e.preventDefault();
+        curMap.zoomOut();
+    });
+
+// Update zoom buttons state based on current zoom level
+    function updateZoomButtonsState() {
+        zoomInBtn.classList.toggle('disabled', curMap.getZoom() === curMap.getMaxZoom());
+        zoomOutBtn.classList.toggle('disabled', curMap.getZoom() === curMap.getMinZoom());
+    }
+
+    curMap.on('zoomend', updateZoomButtonsState);
+    updateZoomButtonsState();  // Initial state update
 
     // leaflet draw control
     map.addLayer(drawnFeatures);
@@ -195,6 +220,19 @@ async function createMap(){
     });
     map.addControl(drawControl);
     // console.log("drawControl");
+
+    markerDrawHandler = new L.Draw.Marker(map, drawControl.options.draw.marker);
+
+    // Add click event listener to the Add Marker button
+    document.getElementById('addMarkerBtn').addEventListener('click', function() {
+        // If marker mode is already active, disable it
+        if (markerDrawHandler.enabled()) {
+            markerDrawHandler.disable();
+        } else {
+            // Enable marker placement mode
+            markerDrawHandler.enable();
+        }
+    });
 
     map.on('draw:created', function (e) {
         if (drawFlag === 'run') {
@@ -520,28 +558,43 @@ function getColorLinear(d) {
 
 }
 
+// function style(feature) {
+//     return {
+//         //fillColor: getColor(feature.properties.pred), // TODO: change to curProperty
+//         fillColor: getColor(feature.properties[curProperty]), // TODO: change to curProperty
+//         weight: 0,
+//         opacity: 1,
+//         color: 'white',
+//         dashArray: '3',
+//         fillOpacity: 0.65
+//     };
+// }
+
 function style(feature) {
     return {
-        //fillColor: getColor(feature.properties.pred), // TODO: change to curProperty
-        fillColor: getColor(feature.properties[curProperty]), // TODO: change to curProperty
+        fillColor: getColor(feature.properties[curProperty]),
         weight: 0,
         opacity: 1,
         color: 'white',
         dashArray: '3',
-        fillOpacity: 0.65
+        fillOpacity: parseFloat(document.getElementById("choroplethOpacity").value)
     };
 }
 
+
 let curMouserOverFIPS = null;
-let highlightedLayers = []
+let lastUpdatedFIPS = null;
+let highlightedLayers = new Set();
 function resetAllHighlight(){
-    if (highlightedLayers.length > 0) {
+    if (highlightedLayers.size > 0) {
         highlightedLayers.forEach(layer => {
             curLayer.resetStyle(layer)
         })
-        highlightedLayers = []
+        highlightedLayers.clear();
     }
 }
+
+// TODO : Fix curInfo Bug
 function highlightHelper(e,color='#68da4c',type='e') {
     var layer;
     if (type ==='layer'){
@@ -566,7 +619,7 @@ function highlightHelper(e,color='#68da4c',type='e') {
 
     layer.bringToFront();
 
-    if(highlightedLayers.length>0 && color==='default'){return} //default color means not clicked
+    if(highlightedLayers.size>0 && color==='default'){return} //default color means not clicked
     var content = '<h4>Crop Yield Information</h4>' +
                 '<b>' + layer.feature.properties.NAMELSAD + '</b><br />' +
                 'Crop type: ' + curCrop + '<br />' +
@@ -574,7 +627,7 @@ function highlightHelper(e,color='#68da4c',type='e') {
                 'Yield: ' + Number(layer.feature.properties.yield).toFixed(2) + ' unit / mi<sup>2</sup><br />' +
                 'Prediction: ' + Number(layer.feature.properties.pred).toFixed(2) + ' unit / mi<sup>2</sup><br />' +
                 'Error: ' + Number(layer.feature.properties.error).toFixed(2) + ' unit / mi<sup>2</sup>';
-    if(highlightedLayers.length===0||color!=='default') {
+    if(highlightedLayers.size===0||color!=='default') {
         // if(type==='e') {
             debouncedDelayedUpdateTemporalInfo(content);
         // } else {
@@ -588,7 +641,7 @@ function highlightHelper(e,color='#68da4c',type='e') {
 
 function highlightFeature(e,type='e') {
     if(doubleClicked) return
-    if(highlightedLayers.includes(e.target)) return;
+    if(highlightedLayers.has(e.target)) return;
     highlightHelper(e)
 }
 
@@ -606,12 +659,12 @@ function resetHighlight(e,type='e') {
         })[0]
     }
 
-    if (highlightedLayers.includes(layer)) return;
+    if (highlightedLayers.has(layer)) return;
     curLayer.resetStyle(layer);
     layer.bringToBack()
     var content = "<h4>Crop Yield Information</h4>" + "Hover over a county";
 
-    if(highlightedLayers.length>0) return;
+    if(highlightedLayers.size>0) return;
     updateTemporalInfo(content);
     // debouncedDelayedUpdateTemporalInfo(content);
 }
@@ -624,8 +677,8 @@ function zoomToFeature(e) {
 
 function zoomToState(e) {
     setTimeout(function() {
-        if(highlightedLayers.includes(e.target)){
-            highlightedLayers = highlightedLayers.filter(d=>d!==e.target)
+        if(highlightedLayers.has(e.target)){
+            highlightedLayers.delete(e.target)
             resetHighlight(e)
             if(ctrlKeyDown){
                 multiChoice = multiChoice.filter(d=>d!==e.target.feature.properties.FIPS)
@@ -635,10 +688,10 @@ function zoomToState(e) {
 
         if (ctrlKeyDown) {
             highlightHelper(e, '#68da4c')
-            highlightedLayers.push(e.target)
+            highlightedLayers.add(e.target)
         } else {
             resetAllHighlight()
-            highlightedLayers.push(e.target)
+            highlightedLayers.add(e.target)
             highlightHelper(e, '#68da4c')
         }
         if (!doubleClicked){
@@ -750,34 +803,51 @@ document.addEventListener('dblclick', function(event) {
 })
 function onEachFeature(feature, layer) {
     layer.on({
-        mouseover: debounce(highlightFeature, 100),
-        mouseout: debounce(resetHighlight, 100),
-        click: debounce(zoomToState, 250),
+        mouseover: highlightFeature,
+        mouseout: resetHighlight,
+        click: zoomToState,
     });
 }
 
 var curInfo;
 var curLegend;
 
+
+var curInfoAdded = false;
 function createHoverControl(response, map, attrs){
-    var info = L.control();
+    const info = L.control();
 
     info.onAdd = function (map) {
-        var container = L.DomUtil.create('div', 'info');
+        curInfoAdded = true;
+        const container = L.DomUtil.create('div', 'info');
         $(container).append('<div id="temporal-info">');
+        const content = "<h4>Crop Yield Information</h4>" + "Hover over a county";
+        $(container).find('#temporal-info').html(content);
+    //     makeDraggable(this)
         return container;
     };
 
-    curInfo = info;
-
-    // Only add curInfo to the map if it should be visible
-    if (curInfoVisible) {
-        curInfo.addTo(map);
+    info.onRemove = function(map) {
+        curInfoAdded = false;
     }
 
-    var content = "<h4>Crop Yield Information</h4>" + "Hover over a county";
-    // updateTemporalInfo(content);
-    debouncedDelayedUpdateTemporalInfo(content);
+    curInfo = info;
+
+
+    curInfo.addTo(map);
+    makeDraggable(curInfo)
+
+
+    // debouncedDelayedUpdateTemporalInfo(content);
+}
+
+function toggleInfo() {
+    if (curInfoAdded){
+        curInfo.remove();
+    } else {
+        curInfo.addTo(curMap);
+        makeDraggable(curInfo)
+    }
 }
 
 function updateTemporalInfo(content, update=false){
@@ -859,6 +929,7 @@ function createLegend(map){
 
     curLegend = legend;
     curLegend.addTo(map);
+    makeDraggable(curLegend)
 }
 
 window.onresize = function(event) {
@@ -1266,6 +1337,10 @@ function updateTable(){
             'Uncertainty(%)':(d.properties.error/d.properties.yield*100).toFixed(2)
     })
 
+    if(highlightedLayers.size<=1){
+        resetAllHighlight();
+    }
+
     if ($('#filterStateIn').val() !== 'all') {
         t = t.filter(d=>d.State === $('#filterStateIn option:selected').text())
     }
@@ -1303,7 +1378,7 @@ $(document).ready(createMap);
 
 //Map download functions :
 function filter(node) {
-    if (node.classList) return (  !node.classList.contains("leaflet-left") && !node.classList.contains("topnav") );
+    if (node.classList) return ( !node.classList.contains("topnav") );
     return true;
 }
 
@@ -1485,15 +1560,15 @@ function downloadFunc(divID){
                 heading.style.fontFamily = "Arial, sans-serif";
         }
 
-        curLegend.setPosition('topright')
-        curInfo.setPosition('bottomleft')
-        drawControl.setPosition('bottomleft')
+        curInfo.remove()
+        zoomControl.remove()
+        drawControl.remove()
         bigDiv.insertBefore(heading,bigDiv.firstChild)
 
 
 
         mapdiv.style.width = '100%'
-        mapdiv.style.height = '100vh'
+        mapdiv.style.height = '100%'
 
     }
 
@@ -1509,9 +1584,11 @@ function downloadFunc(divID){
 
             if(heading){
                 heading.remove()
-                drawControl.setPosition('bottomright')
-                curLegend.setPosition('bottomright')
-                curInfo.setPosition('topright')
+                zoomControl.addTo(curMap)
+                drawControl.addTo(curMap)
+                curInfo.addTo(curMap)
+                makeDraggable(curInfo)
+                makeDraggable(curLegend)
 
             }
             curTileLayer.addTo(curMap)
@@ -1537,7 +1614,6 @@ function previewFunc(divID){
         heading.className = "heading"
 
         userTitile = document.getElementById("userTitle").value
-        console.log(userTitile)
         heading.innerHTML =  (userTitile===''?"<h3>Crop Yield Prediction Map</h3>":("<h3>"+userTitile+"</h3>") )+
             "Crop Type: "+(curCrop==="corn"?"Corn":"Soybean")+"&nbsp;&nbsp; Year: "+curYear+"  &nbsp;&nbsp;    Date: "+curDate[curMonth]+""
             +"<br> "+document.getElementById("userDescription").value
@@ -1584,11 +1660,14 @@ function previewFunc(divID){
                 heading.style.fontFamily = "Arial, sans-serif";
         }
 
-        curLegend.setPosition('topright')
-        curInfo.setPosition('bottomleft')
-        drawControl.setPosition('bottomleft')
-        bigDiv.insertBefore(heading,bigDiv.firstChild)
+        // curLegend.setPosition('topright')
+        // curInfo.setPosition('bottomleft')
+        // drawControl.setPosition('bottomleft')
+        curInfo.remove()
+        zoomControl.remove()
+        drawControl.remove()
 
+        bigDiv.insertBefore(heading,bigDiv.firstChild)
 
 
         mapdiv.style.width = '100%'
@@ -1616,10 +1695,14 @@ function previewFunc(divID){
 
             if(heading){
                 heading.remove()
-                drawControl.setPosition('bottomright')
-                curLegend.setPosition('bottomleft')
-                curInfo.setPosition('topright')
-
+                // drawControl.setPosition('bottomright')
+                // curLegend.setPosition('bottomleft')
+                // curInfo.setPosition('topright')
+                zoomControl.addTo(curMap)
+                drawControl.addTo(curMap)
+                curInfo.addTo(curMap)
+                makeDraggable(curInfo)
+                makeDraggable(curLegend)
             }
             curTileLayer.addTo(curMap)
             mapdiv.style.width = '100vw'
@@ -1768,7 +1851,7 @@ function plotFunc(mode='new'){
             }
     })
         console.log(curFIPS)
-        if(highlightedLayers.length===0){
+        if(highlightedLayers.size===0){
             curMap.eachLayer(function (layer) {
                 if (Object.hasOwn(layer, "feature")
                     && Object.hasOwn(layer.feature, "properties")) {
@@ -2065,6 +2148,18 @@ document.addEventListener('DOMContentLoaded', function() {
     var resetColorSchemeBtn = document.getElementById("resetColorScheme");
     var baseMapSelector = document.getElementById("popupBaseMapSelector");
 
+    var choroplethOpacitySlider = document.getElementById("choroplethOpacity");
+
+    var choroplethOpacityValue = document.getElementById("choroplethOpacityValue");
+
+    function updateOpacityValue(slider, valueSpan) {
+        valueSpan.textContent = slider.value;
+    }
+
+    choroplethOpacitySlider.oninput = function() {
+        updateOpacityValue(this, choroplethOpacityValue);
+    };
+
     function updateLegendPreview() {
         var gradient = `linear-gradient(to right, ${startColorPicker.value}, ${endColorPicker.value})`;
         legendPreview.style.background = gradient;
@@ -2100,6 +2195,13 @@ document.addEventListener('DOMContentLoaded', function() {
                 customStartColor = startColorPicker.value;
                 customEndColor = endColorPicker.value;
                 currentBaseMap = baseMapSelector.value;
+
+                var choroplethOpacity = parseFloat(choroplethOpacitySlider.value);
+                // var legendOpacity = parseFloat(legendOpacitySlider.value);
+                // var controlBarOpacity = parseFloat(controlBarOpacitySlider.value);
+
+                applyChoroplethOpacity(choroplethOpacity);
+
                 updateColorScheme();
                 changeBaseMap(currentBaseMap);
                 closePopup();
@@ -2161,6 +2263,32 @@ function updateColorScheme() {
     updateLegend();
 }
 
+function applyChoroplethOpacity(opacity) {
+    if (curLayer) {
+        curLayer.eachLayer(function (layer) {
+            if (layer.setStyle) {
+                layer.setStyle({fillOpacity: opacity});
+            }
+        });
+    }
+}
+
+function applyLegendOpacity(opacity) {
+    if (curLegend) {
+        var legendContainer = curLegend.getContainer();
+        if (legendContainer) {
+            legendContainer.style.opacity = opacity;
+        }
+    }
+}
+
+function applyControlBarOpacity(opacity) {
+    var controlBar = document.querySelector('.leaflet-control-bar');
+    if (controlBar) {
+        controlBar.style.opacity = opacity;
+    }
+}
+
 function updateLegend() {
     if (curLegend) {
         curMap.removeControl(curLegend);
@@ -2219,9 +2347,39 @@ function closePopup(popupId) {
     document.getElementById(popupId).style.display = 'none';
 }
 
+
 // Close popup when clicking outside of it
 window.onclick = function(event) {
     if (event.target.className === 'popup') {
         event.target.style.display = 'none';
     }
+}
+
+
+
+function makeDraggable(control) {
+    var controlContainer = control.getContainer();
+    L.DomEvent.disableClickPropagation(controlContainer);
+    L.DomEvent.disableScrollPropagation(controlContainer);
+
+    // Prevent map drag when dragging the control
+    L.DomEvent.on(controlContainer, 'mousedown', function (e) {
+        L.DomEvent.stopPropagation(e);
+    });
+
+    $(controlContainer).draggable({
+        start: function(event, ui) {
+            // Disable pointer events on the map during drag
+            $('.leaflet-container').css('pointer-events', 'none');
+        },
+        stop: function(event, ui) {
+            // Re-enable pointer events on the map after drag
+            $('.leaflet-container').css('pointer-events', 'auto');
+        }
+    });
+
+    // Prevent click events from propagating to the map
+    $(controlContainer).on('click dblclick', function(e) {
+        e.stopPropagation();
+    });
 }
