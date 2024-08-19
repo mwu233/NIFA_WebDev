@@ -313,39 +313,6 @@ function fitBoundsByID(id){
     curMap.fitBounds(layer.getBounds())
 }
 
-// function changeBaseMap(){
-//     // var basemaps = {
-//     //     'OpenStreetMap': L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-//     //         maxZoom: 19,
-//     //         attribution: '© OpenStreetMap contributors'
-//     //     }),
-//     //     'CartoDB Positron': L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}.png', {
-//     //         maxZoom: 19,
-//     //         attribution: '© CartoDB'
-//     //     }),
-//     //     'Esri WorldTerrain':  L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Terrain_Base/MapServer/tile/{z}/{y}/{x}', {
-//     //         attribution: 'Tiles &copy; Esri &mdash; Source: USGS, Esri, TANA, DeLorme, and NPS',
-//     //         maxZoom: 13
-//     //     }),
-//     //     'USGS USTopo': L.tileLayer('https://basemap.nationalmap.gov/arcgis/rest/services/USGSTopo/MapServer/tile/{z}/{y}/{x}', {
-//     //         maxZoom: 20,
-//     //         attribution: 'Tiles courtesy of the <a href="https://usgs.gov/">U.S. Geological Survey</a>'
-//     //     }),
-//     //     'Esri WorldShadedRelief':L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Shaded_Relief/MapServer/tile/{z}/{y}/{x}', {
-//     //         attribution: 'Tiles &copy; Esri &mdash; Source: Esri',
-//     //         maxZoom: 13
-//     //     }),
-//     //     'Esri NatGeoWorldMap': L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/NatGeo_World_Map/MapServer/tile/{z}/{y}/{x}', {
-//     //         attribution: 'Tiles &copy; Esri &mdash; National Geographic, Esri, DeLorme, NAVTEQ, UNEP-WCMC, USGS, NASA, ESA, METI, NRCAN, GEBCO, NOAA, iPC',
-//     //         maxZoom: 16
-//     //     })
-//     // };
-//     // curTileLayer = basemaps[$('#basemapInput').val()]
-//     //     curTileLayer.addTo(curMap);
-//
-//
-// }
-
 function changeBaseMap(selectedBaseMap) {
     if (selectedBaseMap === undefined) {
     selectedBaseMap=$('#basemapInput').val()
@@ -502,15 +469,6 @@ function processData(data){
     //properties of the first feature in the dataset
     var properties = data.features[0].properties;
 
-    //push each attribute name into attributes array
-    // for (var attribute in properties){
-    //     //only take attributes with population values
-    //     if (attribute.indexOf("8") > -1){
-    //         attrs.push(attribute);
-    //     };
-    // };
-    // // return the pop attrs retrieved from the first feature
-    // return attrs;
     return properties;
 }
 
@@ -523,17 +481,6 @@ function createChoropleth(data, map, attrs, idx){
     document.getElementById("userTitle").value = curCrop.charAt(0).toUpperCase() + curCrop.slice(1) + " "
         + (curProperty==="pred"?"Prediction":curProperty==="yield"?"Yield":"Error") + " for US in "  + curYear;
 
-    //create a new/updated Leaflet GeoJSON layer and return it to the map
-    // var geoJsonLayer = L.geoJson(data, {
-    //     // for filtering with min and max
-    //     filter: function(feature, layer) {
-    //         return filterMinMax(feature, layer, idx);
-    //     },
-    //     // create circle markers for the metro points
-    //     pointToLayer: function(feature, latlng){
-    //         return pointToLayer(feature, latlng, attrs, idx);
-    //     }
-    // });
     var geoJsonLayer = L.geoJson(data, {
         style: style,
         onEachFeature: onEachFeature
@@ -628,136 +575,45 @@ function highlightHelper(e,color='#68da4c',type='e') {
                 'Prediction: ' + Number(layer.feature.properties.pred).toFixed(2) + ' unit / mi<sup>2</sup><br />' +
                 'Error: ' + Number(layer.feature.properties.error).toFixed(2) + ' unit / mi<sup>2</sup>';
     if(highlightedLayers.length===0||color!=='default') {
-        // updateTemporalInfo(content);
-        debouncedDelayedUpdateTemporalInfo(content);
+        // if(type==='e') {
+            debouncedDelayedUpdateTemporalInfo(content);
+        // } else {
+        //     console.log("over")
+        //     updateTemporalInfo(content);
+        // }
     }
     d3.select("#temporal-info").selectAll("svg").remove();
-    // scatterGen("temporal-info",layer.feature.properties.FIPS,'append')
     debouncedDelayedScatterGen("temporal-info",layer.feature.properties.FIPS,'append')
-
-    // TODO: remove following to use function call
-    // var cornYield = d3.csv("data/corn_yield_US.csv", function(data) {
-    //     var county = data.filter(function(row) {
-    //         if (Number(row["FIPS"]) === layer.feature.properties.FIPS)
-    //         {
-    //             return row;
-    //         }
-    //     });
-    //
-    //     var ymax = Math.max.apply(Math, county.map(function (o) {
-    //         return o.yield;
-    //     }))
-    //     var ymin = Math.min.apply(Math, county.map(function (o) {
-    //         return o.yield;
-    //     }))
-    //
-    //     var xmax = Math.max.apply(Math, county.map(function (o) {
-    //         return o.year;
-    //     }))
-    //     var xmin = Math.min.apply(Math, county.map(function (o) {
-    //         return o.year;
-    //     }))
-    //
-    //     // set the dimensions and margins of the graph
-    //     var margin = {
-    //             top: 10,
-    //             right: 50,
-    //             bottom: 10,
-    //             left: 50
-    //         },
-    //         width = 325 - margin.left - margin.right,
-    //         height = 220 - margin.top - margin.bottom;
-    //
-    //
-    //     // append the svg object to the body of the page
-    //     if(layer.feature.properties.FIPS===curMouserOverFIPS) {
-    //         d3.select("#temporal-info").selectAll("svg").remove();
-    //         const svg = d3.select("#temporal-info")
-    //             .append("svg")
-    //             .attr("preserveAspectRatio", "xMinYMin meet")
-    //             .attr("viewBox", "0 0 300 250")
-    //             .append("g")
-    //             .attr("transform",
-    //                 "translate(" + margin.left + "," + margin.top + ")");
-    //
-    //         // Add X axis --> it is a date format
-    //         var x = d3.scaleLinear()
-    //             .domain([xmin - 5, xmax + 5])
-    //             .range([0, width]);
-    //
-    //         svg.append("g")
-    //             .attr("transform", "translate(0," + height + ")")
-    //             .attr("class", "axisBlack")
-    //             .call(d3.axisBottom(x).tickSizeOuter(0))
-    //             .call(d3.axisBottom(x).tickValues(d3.range(xmin, xmax, 10)))
-    //         //     .selectAll("text").remove()
-    //
-    //         // text label for the x axis
-    //         svg.append("text")
-    //             .attr("transform",
-    //                 "translate(" + (width / 2) + " ," +
-    //                 (height + margin.top + 25) + ")")
-    //             .attr("fill", "black")
-    //             .style("text-anchor", "middle")
-    //             .style("font", "12px verdana")
-    //             .text("Year");
-    //
-    //         // Add Y axis
-    //         var y = d3.scaleLinear()
-    //             .domain([ymin - 10, ymax + 10])
-    //             .range([height, 0]);
-    //
-    //         svg.append("g")
-    //             .attr("class", "axisBlack")
-    //             .call(d3.axisLeft(y).tickSizeOuter(0));
-    //
-    //         // text label for the y axis
-    //         svg.append("text")
-    //             .attr("transform", "rotate(-90)")
-    //             .attr("y", margin.left - 95)
-    //             .attr("x", 0 - (height / 2))
-    //             .attr("dy", "1em")
-    //             .attr("fill", "black")
-    //             .style("text-anchor", "middle")
-    //             .style("font", "12px verdana")
-    //             .text("Corn Yield");
-    //
-    //         // Add dots
-    //         svg.append('g')
-    //             .selectAll("dot")
-    //             .data(county)
-    //             .enter()
-    //             .append("circle")
-    //             .attr("cx", function (d) {
-    //                 return x(d.year);
-    //             })
-    //             .attr("cy", function (d) {
-    //                 return y(d.yield);
-    //             })
-    //             .attr("r", 4)
-    //             .style("fill", "#69b3a2")
-    //
-    //     }
-    // });
 }
 
-function highlightFeature(e) {
+function highlightFeature(e,type='e') {
     if(doubleClicked) return
     if(highlightedLayers.includes(e.target)) return;
     highlightHelper(e)
 }
 
-function resetHighlight(e) {
+function resetHighlight(e,type='e') {
     if(doubleClicked) return
 
-    if (highlightedLayers.includes(e.target)) return;
-    curLayer.resetStyle(e.target);
-    e.target.bringToBack()
+    let layer;
+    if (type ==='e'){
+        layer = e.target;
+    } if (type==='FIPS'){
+        layer = curLayer.getLayers().filter(d=>{
+            if (d.hasOwnProperty('feature') && d.feature.hasOwnProperty('properties') && d.feature.properties.hasOwnProperty('FIPS')) {
+                return d.feature.properties.FIPS === e
+            } else {return false}
+        })[0]
+    }
+
+    if (highlightedLayers.includes(layer)) return;
+    curLayer.resetStyle(layer);
+    layer.bringToBack()
     var content = "<h4>Crop Yield Information</h4>" + "Hover over a county";
 
     if(highlightedLayers.length>0) return;
-    // updateTemporalInfo(content);
-    debouncedDelayedUpdateTemporalInfo(content);
+    updateTemporalInfo(content);
+    // debouncedDelayedUpdateTemporalInfo(content);
 }
 
 // too large, use zoomToState instead
@@ -925,24 +781,11 @@ function createHoverControl(response, map, attrs){
 }
 
 function updateTemporalInfo(content, update=false){
-    if (curInfoVisible) {
         $('#temporal-info').html(content);
-        // if (!curMap.hasControl(curInfo)) {
-        //     curInfo.addTo(curMap);
-        // }
-    }
 }
 
-const debouncedUpdateTemporalInfo = debounce(function(content, update) {
-    if (curInfoVisible) {
-        $('#temporal-info').html(content);
-    }
-}, 200);
-
 const debouncedDelayedUpdateTemporalInfo = debouncedDelay(function(content) {
-    if (curInfoVisible) {
         $('#temporal-info').html(content);
-    }
 }, 100, 500); // 100ms debounce, 500ms delay
 
 function createLegend(map){
@@ -951,40 +794,6 @@ function createLegend(map){
     legend.onAdd = function (map) {
 
         var div = L.DomUtil.create('div', 'info legend');
-        // var grades; //  [64, 100, 130, 160, 190] [64, 100, 130, 160, 190]
-        // // var labels = [];
-        //
-        // // TODO: curProperty = 'pred' / 'yield' / 'error'- color scheme should be different
-        // if (curProperty === "pred") {
-        //     div.innerHTML += "Crop Prediction<br>";
-        // }
-        // else if (curProperty === "yield") {
-        //     div.innerHTML += "Crop Yield<br>";
-        // }
-        //
-        // if (curProperty === "error") {
-        //     grades = [-15, -2, -1, 1, 2];
-        //     div.innerHTML += "Crop Prediction Errors<br>"
-        //     for (var i = 0; i < grades.length; i++) {
-        //         div.innerHTML +=
-        //             '<i style="background:' + getColor(grades[i] + 0.001) + '"></i> ' +
-        //             grades[i] + (grades[i + 1] ? '&nbsp;&ndash;&nbsp;' + grades[i + 1] + '<br>' : '+');
-        //     }
-        // }
-        // else {
-        //     if (curCrop === "corn") {
-        //         grades = [60, 100, 130, 160, 190];
-        //     }
-        //     else { // soybean
-        //         grades = [20, 45, 50, 55, 60];
-        //     }
-        //     // loop through our density intervals and generate a label with a colored square for each interval
-        //     for (var i = 0; i < grades.length; i++) {
-        //         div.innerHTML +=
-        //             '<i style="background:' + getColor(grades[i] + 1) + '"></i> ' +
-        //             grades[i] + (grades[i + 1] ? '&ndash;' + grades[i + 1] + '<br>' : '+');
-        //     }
-        // }
 
         div.innerHTML = ''; // Clear existing content
 
@@ -1469,20 +1278,14 @@ function updateTable(){
 
 
     table.on("rowMouseOver", function(e, row){
-        // console.log(row.getData().FIPS)
-        let l = curLayer.getLayers().filter(d=>{
-            if (d.hasOwnProperty('feature') && d.feature.hasOwnProperty('properties') && d.feature.properties.hasOwnProperty('FIPS')) {
-                return d.feature.properties.FIPS === row.getData().FIPS} else {return false}
-        })[0]
-        l.fire("mouseover")
+        // get fips
+        const fips = row.getData().FIPS
+        highlightHelper(fips,"#68da4c","FIPS")
     })
 
     table.on("rowMouseOut", function(e, row){
-        let l = curLayer.getLayers().filter(d=>{
-            if (d.hasOwnProperty('feature') && d.feature.hasOwnProperty('properties') && d.feature.properties.hasOwnProperty('FIPS')) {
-                return d.feature.properties.FIPS === row.getData().FIPS} else {return false}
-        })[0]
-        l.fire("mouseout")
+        const fips = row.getData().FIPS
+        resetHighlight(fips,"FIPS")
     })
 
     table.on("rowClick", function(e, row){
@@ -1937,7 +1740,6 @@ function populateDropdowns(){
             }
         }
     });
-
 }
 
 /**
@@ -2368,25 +2170,41 @@ function updateLegend() {
 
 // tooltip
 document.addEventListener('DOMContentLoaded', function() {
-    const sidebarTabs = document.querySelectorAll('.sidebar-tabs > li > a');
+    // Function to create and manage tooltips
+    function createTooltip(element, position) {
+        if (!element.hasAttribute('data-tooltip')) return;
 
-    sidebarTabs.forEach(tab => {
         const tooltip = document.createElement('div');
         tooltip.className = 'custom-tooltip';
-        tooltip.textContent = tab.getAttribute('data-tooltip');
-        document.body.appendChild(tooltip); // Append to body instead of tab
+        tooltip.textContent = element.getAttribute('data-tooltip');
+        document.body.appendChild(tooltip);
 
-        tab.addEventListener('mouseenter', function(e) {
+        element.addEventListener('mouseenter', function(e) {
             const rect = this.getBoundingClientRect();
-            tooltip.style.left = `${rect.right + 10}px`;
-            tooltip.style.top = `${rect.top + rect.height / 2}px`;
+            if (position === 'right') {
+                tooltip.style.left = `${rect.right + 10}px`;
+                tooltip.style.top = `${rect.top + rect.height / 2}px`;
+                tooltip.style.transform = 'translateY(-50%)';
+            } else if (position === 'bottom') {
+                tooltip.style.left = `${rect.left + rect.width / 2}px`;
+                tooltip.style.top = `${rect.bottom + 10}px`;
+                tooltip.style.transform = 'translateX(-50%)';
+            }
             tooltip.style.opacity = '1';
         });
 
-        tab.addEventListener('mouseleave', function() {
+        element.addEventListener('mouseleave', function() {
             tooltip.style.opacity = '0';
         });
-    });
+    }
+
+    // Create tooltips for sidebar tabs
+    const sidebarTabs = document.querySelectorAll('.sidebar-tabs > li > a');
+    sidebarTabs.forEach(tab => createTooltip(tab, 'right'));
+
+    // Create tooltips for top navigation bar items (excluding the first item)
+    const topNavLinks = document.querySelectorAll('#bar.topnav > a:not(:first-child)');
+    topNavLinks.forEach(link => createTooltip(link, 'bottom'));
 });
 
 function openReferencePopup() {
@@ -2407,5 +2225,3 @@ window.onclick = function(event) {
         event.target.style.display = 'none';
     }
 }
-
-

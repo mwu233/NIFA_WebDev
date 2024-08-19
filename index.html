@@ -25,12 +25,11 @@
 
 <body>
     <div id="bar" class="topnav">
-    <a class="active">&nbsp&nbsp Crop Yield Prediction &nbsp&nbsp</a>
-
-        <a href="#" role="button" id="tablePopupButton"><i class="fa fa-table"></i></a>
-    <a role="tab"><i class="fa fa-chart-line" ></i></a>
-    <a role="tab"><i class="fa fa-map-location-dot" ></i></a>
-    <a role="tab" id="settingsBtn" onclick="openSettingsPopup()"><i class="fa fa-gears"></i></a>
+        <a class="active">&nbsp&nbsp Crop Yield Prediction &nbsp&nbsp</a>
+        <a href="#" role="button" id="tablePopupButton" data-tooltip="Data Table"><i class="fa fa-table"></i></a>
+        <a role="tab" data-tooltip="Plot Data"><i class="fa fa-chart-line"></i></a>
+        <a role="tab" data-tooltip="Add Marker"><i class="fa fa-map-location-dot"></i></a>
+        <a role="tab" data-tooltip="Map Settings" id="settingsBtn" onclick="openSettingsPopup()"><i class="fa fa-gears"></i></a>
         <!--    settings popup-->
         <div id="settingsPopup" class="popup">
             <div class="popup-content">
@@ -71,10 +70,10 @@
                 </div>
             </div>
         </div>
-    <a role="tab"><i class="fa-solid fa-trash" onclick="removeAllDrawn()"></i></a>
-    <a href="#" onclick="openReferencePopup()"><i class="fa fa-book"></i></a>
-    <a href="#" onclick="openProfilePopup()"><i class="fa fa-users"></i></a>
-        <a href="https://github.com/mwu233/NIFA_WebDev" role="tab" target="_blank"><i class="fa-brands fa-github "></i></a>
+        <a role="tab" data-tooltip="Remove All Markers"><i class="fa-solid fa-trash" onclick="removeAllDrawn()"></i></a>
+        <a href="#" data-tooltip="References" onclick="openReferencePopup()"><i class="fa fa-book"></i></a>
+        <a href="#" data-tooltip="Research Group" onclick="openProfilePopup()"><i class="fa fa-users"></i></a>
+        <a href="https://github.com/mwu233/NIFA_WebDev" role="tab" target="_blank" data-tooltip="Go To Github "><i class="fa-brands fa-github "></i></a>
     </div>
 
     <!-- Add these new popup divs -->
@@ -106,29 +105,11 @@
     </div>
 
     <div id="sidebar" class="sidebar collapsed">
-        <!-- Nav tabs -->
-<!--        <div class="sidebar-tabs">-->
-<!--            <ul role="tablist">-->
-<!--                <li><a href="#run" role="tab" title="Run Model"><i class="fa-solid fa-play-circle fa-lg"></i></a></li>-->
-<!--                <li><a href="#search" role="tab" title="Data Search"><i class="fa-solid fa-filter fa-lg"></i></a></li>-->
-<!--                <li><a href="#visualization" role="tab" title="Visualization"><i class="fa-solid fa-chart-simple fa-lg"></i></a></li>-->
-<!--                <li><a href="#mapping" role="tab" title="Mapping and download"><i class="fa-solid fa-globe fa-lg"></i></a></li>-->
-<!--&lt;!&ndash;                <li><a href="#testtab" role="tab" title="Test Tab"><i class="fa-solid fa-globe fa-lg"></i></a> </li>&ndash;&gt;-->
-<!--            </ul>-->
-
-<!--            <ul role="tablist">-->
-<!--                <li><a href="#reference" role="tab"><i class="fa-solid fa-paperclip"></i></a></li>-->
-<!--                <li><a href="#profile" role="tab"><i class="fa-solid fa-users fa-lg"></i></a></li>-->
-<!--            </ul>-->
-<!--        </div>-->
-
         <ul role="tablist" class="sidebar-tabs">
             <li><a href="#run" role="tab" data-tooltip="Run Model"><i class="fa fa-play"></i></a></li>
             <li><a href="#search" role="tab" data-tooltip="Data Search"><i class="fa fa-search"></i></a></li>
             <li><a href="#visualization" role="tab" data-tooltip="Visualization"><i class="fa fa-chart-bar"></i></a></li>
             <li><a href="#mapping" role="tab" data-tooltip="Mapping and download"><i class="fa fa-map"></i></a></li>
-<!--            <li><a href="#reference" role="tab" data-tooltip="References"><i class="fa fa-book"></i></a></li>-->
-<!--            <li><a href="#profile" role="tab" data-tooltip="Profile"><i class="fa fa-user"></i></a></li>-->
         </ul>
 
         <!-- Tab panes -->
@@ -136,19 +117,6 @@
 
             <div class="sidebar-pane" id="run">
                 <h1 class="sidebar-header">Run Model<span class="sidebar-close"><i class="fa fa-caret-left"></i></span></h1>
-
-<!--                <div id="modelLocationFillIn">-->
-<!--                    <h3 style="margin-bottom:0px;margin-top: 25px;margin-left: 0px;">-->
-<!--                        County:-->
-<!--                    </h3>-->
-<!--                    &lt;!&ndash;Make sure the form has the autocomplete function switched off:&ndash;&gt;-->
-<!--                    <form autocomplete="off" action="/action_page.php">-->
-<!--                        <div class="autocomplete" style="width:300px;">-->
-<!--                            <input id="modelLocationInput" type="text" name="County" placeholder="Enter a county">-->
-<!--                        </div>-->
-<!--                    </form>-->
-<!--                </div>-->
-
                 <div id="runModelState">
                     <h3 style="margin-bottom:0px;margin-top: 5px;margin-left: 0px;">
                         State:
@@ -406,8 +374,6 @@
                         Plot</button>
                     <button class="btn" style="background:#42a76f;color:white;" onclick="downloadFunc('report')">
                         Download Report</button>
-<!--                    <button class="btn" style="background:#3630a3;color:white;" onclick="downloadPDFFunc('report')">-->
-<!--                        Download PDF</button>-->
                 </div>
 
                 <div id="report" style="background: #ffffff">
@@ -428,34 +394,8 @@
                 </div>
 
                 </div>
-
-<!--            <div class="sidebar-pane" id="reference">-->
-<!--                <p>References: <a href="https://www.sciencedirect.com/science/article/abs/pii/S0034425721001267" role="tab" target="_blank">Corn yield prediction and uncertainty analysis based on remotely sensed variables using a Bayesian neural network approach</a>.</p>-->
-<!--                <p>In this project, we have developed models and tools to provide near real-time in-season crop yield predictions for two mainly commodity crops (i.e., corn and soybeans) at the county-level for the CONUS, based on state-of-the-art remote sensing and deep learning technologies. </p>-->
-<!--                <p>The predicted yield information will be disseminated through a web-based cyber-platform for free public use, which is critical for a variety of stakeholders, such as for US producers to make operational decisions; for insurance companies to help with claim and compliance assessment; for agricultural finance companies to support businesses of distribution, processing, and marketing. </p>-->
-<!--                <p>The predicted yield information will also be delivered to USDA for decision support to maintain the stability of the food supply and price, to reduce food security threats. The proposed tool could potentially reduce the USDA NASS survey response burden and cost, improve the efficiency and data quality, and enhance USDA NASS crop yield prediction capability. </p>-->
-<!--                <p>Therefore, the proposed project will add value to NASS's existing crop yield estimation program and have broad impacts on many stakeholders.</p>-->
-<!--            </div>-->
-
-<!--            <div class="sidebar-pane" id="profile">-->
-
-<!--                <h1 class="sidebar-header">Research Group<span class="sidebar-close"><i class="fa fa-caret-left"></i></span></h1>-->
-<!--                <p>Zhou Zhang, UW-Madison, zzhang347@wisc.edu; </p>-->
-<!--                <p>Yuchi Ma, UW-Madison, ma286@wisc.edu; </p>-->
-<!--                <p>Zeyu Cao, UW-Madison, zcao96@wisc.edu; </p>-->
-<!--                <p>Zhengwei Yang, REE-NASS, zhengwei.yang@usda.gov </p>-->
-<!--                <p>Qunying Huang, UW-Madison, qhuang46@wisc.edu;</p>-->
-<!--                <p>Meiliu Wu, UW-Madison, mwu233@wisc.edu; </p>-->
-<!--                <p>Songxi Yang, UW-Madison, songxi.yang@wisc.edu;</p>-->
-<!--                <p>Haiyue Liu, UW-Madison, hliu746@wisc.edu;</p>-->
-<!--                -->
-<!--    -->
-
-<!--            </div>-->
-
         </div>
     </div>
-
 
     <div id = "mapid">
         <div id="map"></div>
