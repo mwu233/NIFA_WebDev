@@ -480,17 +480,10 @@ function getData(map, crop, year, month, location){
 
             // create control
             createHoverControl(response, map, attributes);
-            // createSequenceControls(response, map, attributes); //add response here
 
-            // create legend
-            createLegend(map);
-
-            // // update legend
-            // updateLegend(map, attributes[0]);
-
+            createLegend(map); // legend
             createSideMenu(map);
-
-            createMenu(map);
+            createMenu(map); // top menu
 
         })
         .catch(error => {
@@ -553,22 +546,6 @@ waitForElement()
 function getColor(d) {
     return curColorScale(d);
 }
-
-function getColorLinear(d) {
-
-}
-
-// function style(feature) {
-//     return {
-//         //fillColor: getColor(feature.properties.pred), // TODO: change to curProperty
-//         fillColor: getColor(feature.properties[curProperty]), // TODO: change to curProperty
-//         weight: 0,
-//         opacity: 1,
-//         color: 'white',
-//         dashArray: '3',
-//         fillOpacity: 0.65
-//     };
-// }
 
 function style(feature) {
     return {
@@ -665,8 +642,8 @@ function resetHighlight(e,type='e') {
     var content = "<h4>Crop Yield Information</h4>" + "Hover over a county";
 
     if(highlightedLayers.size>0) return;
-    updateTemporalInfo(content);
-    // debouncedDelayedUpdateTemporalInfo(content);
+    // updateTemporalInfo(content);
+    debouncedDelayedUpdateTemporalInfo(content);
 }
 
 // too large, use zoomToState instead
@@ -812,7 +789,6 @@ function onEachFeature(feature, layer) {
 var curInfo;
 var curLegend;
 
-
 var curInfoAdded = false;
 function createHoverControl(response, map, attrs){
     const info = L.control();
@@ -823,7 +799,6 @@ function createHoverControl(response, map, attrs){
         $(container).append('<div id="temporal-info">');
         const content = "<h4>Crop Yield Information</h4>" + "Hover over a county";
         $(container).find('#temporal-info').html(content);
-    //     makeDraggable(this)
         return container;
     };
 
@@ -833,12 +808,9 @@ function createHoverControl(response, map, attrs){
 
     curInfo = info;
 
-
     curInfo.addTo(map);
     makeDraggable(curInfo)
 
-
-    // debouncedDelayedUpdateTemporalInfo(content);
 }
 
 function toggleInfo() {
@@ -1351,7 +1323,6 @@ function updateTable(){
         height:"311px",
     })
 
-
     table.on("rowMouseOver", function(e, row){
         // get fips
         const fips = row.getData().FIPS
@@ -1561,11 +1532,9 @@ function downloadFunc(divID){
         }
 
         curInfo.remove()
-        zoomControl.remove()
+        // zoomControl.remove()
         drawControl.remove()
         bigDiv.insertBefore(heading,bigDiv.firstChild)
-
-
 
         mapdiv.style.width = '100%'
         mapdiv.style.height = '100%'
@@ -1584,7 +1553,7 @@ function downloadFunc(divID){
 
             if(heading){
                 heading.remove()
-                zoomControl.addTo(curMap)
+                // zoomControl.addTo(curMap)
                 drawControl.addTo(curMap)
                 curInfo.addTo(curMap)
                 makeDraggable(curInfo)
@@ -1606,7 +1575,6 @@ function previewFunc(divID){
             // console.log("baseMapOff")
             curTileLayer.remove()
         }
-
 
         const bigDiv = document.getElementById('mapid')
 
@@ -1660,11 +1628,8 @@ function previewFunc(divID){
                 heading.style.fontFamily = "Arial, sans-serif";
         }
 
-        // curLegend.setPosition('topright')
-        // curInfo.setPosition('bottomleft')
-        // drawControl.setPosition('bottomleft')
         curInfo.remove()
-        zoomControl.remove()
+        // zoomControl.remove()
         drawControl.remove()
 
         bigDiv.insertBefore(heading,bigDiv.firstChild)
@@ -1695,10 +1660,8 @@ function previewFunc(divID){
 
             if(heading){
                 heading.remove()
-                // drawControl.setPosition('bottomright')
-                // curLegend.setPosition('bottomleft')
-                // curInfo.setPosition('topright')
-                zoomControl.addTo(curMap)
+
+                // zoomControl.addTo(curMap)
                 drawControl.addTo(curMap)
                 curInfo.addTo(curMap)
                 makeDraggable(curInfo)
@@ -2058,14 +2021,6 @@ function scatterGen(plotDivID,fipsIn,mode='new'){
             })
 }
 
-
-function plotPredicted(filename,variable){
-
-}
-
-function captureAndDownloadWindow() {
-
-}
 
 async function runModel(){
     // alert("Model started running, it may take a while. Please check the progress later.")
