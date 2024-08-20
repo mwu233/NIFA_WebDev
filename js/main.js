@@ -1108,34 +1108,70 @@ We do so by setting a global variable drawFlag to 'run'.
  */
 function createSideMenu(map) {
 
-    L.Control.Sidebar.prototype._onClick = function() {
-        var tabId = this.querySelector('a').hash.slice(1);
+    let curTab;
+    let lastOpenedTab;
+    // L.Control.Sidebar.prototype._onClick = function() {
+    //     var tabId = this.querySelector('a').hash.slice(1);
+    //
+    //         // Call the original _onClick function for other tabs
+    //         if (L.DomUtil.hasClass(this, 'active')) {
+    //             this._sidebar.close();
+    //         } else if (!L.DomUtil.hasClass(this, 'disabled')) {
+    //             this._sidebar.open(tabId);
+    //             if (tabId === 'run') {
+    //                 curTileLayer.remove()
+    //                 curLayer.remove()
+    //                 curLegend.remove()
+    //                 curInfo.remove()
+    //                 drawFlag = 'run';
+    //             } else {
+    //                 curTileLayer.addTo(curMap);
+    //                 curLayer.addTo(curMap);
+    //                 curLegend.addTo(curMap);
+    //                 curInfo.addTo(curMap);
+    //                 drawFlag = 'normal';
+    //             }
+    //         }
+    // };
 
-            // Call the original _onClick function for other tabs
-            if (L.DomUtil.hasClass(this, 'active')) {
-                this._sidebar.close();
-            } else if (!L.DomUtil.hasClass(this, 'disabled')) {
-                this._sidebar.open(tabId);
-                if (tabId === 'run') {
-                    curTileLayer.remove()
-                    curLayer.remove()
-                    curLegend.remove()
-                    curInfo.remove()
-                    drawFlag = 'run';
-                } else {
-                    curTileLayer.addTo(curMap);
-                    curLayer.addTo(curMap);
-                    curLegend.addTo(curMap);
-                    curInfo.addTo(curMap);
-                    drawFlag = 'normal';
-                }
+    L.Control.Sidebar.prototype._onClick = function() {
+        let tabId = this.querySelector('a').hash.slice(1);
+        if (L.DomUtil.hasClass(this, 'active')) {
+            this._sidebar.close();
+            if(lastOpenedTab === 'run'){
+                curTileLayer.addTo(curMap);
+                curLayer.addTo(curMap);
+                curLegend.addTo(curMap);
+                curInfo.addTo(curMap);
+                makeDraggable(curInfo)
+                makeDraggable(curLegend)
+                drawFlag = 'normal';
             }
-    };
+        } else if (!L.DomUtil.hasClass(this, 'disabled')) {
+            this._sidebar.open(tabId);
+            lastOpenedTab = tabId;
+            if (tabId === 'run') {
+
+                curTileLayer.remove()
+                curLayer.remove()
+                curLegend.remove()
+                curInfo.remove()
+                drawFlag = 'run';
+            } else {
+                curTileLayer.addTo(curMap);
+                curLayer.addTo(curMap);
+                curLegend.addTo(curMap);
+                curInfo.addTo(curMap);
+                makeDraggable(curInfo)
+                makeDraggable(curLegend)
+                drawFlag = 'normal';
+            }
+        }
+    }
 
     sidebar = L.control.sidebar('sidebar').addTo(map);
 
     sidebar.on('opening', function() {
-        console.log("Sidebar is opening");
         // Add your custom code here for when the sidebar opens
         addControlKeyListeners()
         hideCurInfo()
