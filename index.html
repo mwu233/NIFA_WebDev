@@ -2,12 +2,14 @@
 <html lang="en">
 <head>
     <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width", initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Crop Yield Prediction Map</title>
-    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.6.0/dist/leaflet.css" integrity="sha512-xwE/Az9zrjBIphAcBb3F6JVqxf46+CDLwfLMHloNu6KEQCAWi6HcDUbeOfBIptF7tcCzusKFjFw2yuvEpDL9wQ==" crossorigin="" />
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.6.0/dist/leaflet.css"
+          integrity="sha512-xwE/Az9zrjBIphAcBb3F6JVqxf46+CDLwfLMHloNu6KEQCAWi6HcDUbeOfBIptF7tcCzusKFjFw2yuvEpDL9wQ=="
+          crossorigin=""/>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" rel="stylesheet">
     <link rel="stylesheet" href="//code.jquery.com/ui/1.12.1/themes/base/jquery-ui.css">
-    <link rel="stylesheet" href="css/leaflet-sidebar.css" />
+    <link rel="stylesheet" href="css/leaflet-sidebar.css"/>
     <link rel="stylesheet" href="css/style.css">
     <!-- leaflet draw plugin -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet.draw/0.4.2/leaflet.draw.css"/>
@@ -24,224 +26,253 @@
 </head>
 
 <body>
-    <div id="bar" class="topnav">
+<div id="bar" class="topnav">
     <a class="active">&nbsp&nbsp Crop Yield Prediction &nbsp&nbsp</a>
-    <a href="#profile" role="tab"><i class="fa-solid fa-users"></i></a>
-    <a href="https://github.com/mwu233/NIFA_WebDev" role="tab" target="_blank"><i class="fa-brands fa-github "></i></a>
-        <a href="#" role="button" id="tablePopupButton"><i class="fa fa-table"></i></a>
-    <a role="tab"><i class="fa fa-chart-line" ></i></a>
-    <a role="tab"><i class="fa fa-map-location-dot" ></i></a>
-    <a role="tab" id="settingsBtn" onclick="openSettingsPopup()"><i class="fa fa-gears"></i></a>
-        <!--    settings popup-->
-        <div id="settingsPopup" class="popup">
-            <div class="popup-content">
-                <span class="close">&times;</span>
-                <h2>Settings</h2>
+    <a href="#" id="zoomInBtn" role="tab" data-tooltip="Zoom In"><i class="fas fa-plus"></i></a>
+    <a id="homeButton" role="tab" data-tooltip="Reset View" onclick="curMap.setView([39.8283, -98.5795], 5);"><i class="fas fa-home"></i></a>
+    <a href="#" id="zoomOutBtn" role="tab" data-tooltip="Zoom Out"><i class="fas fa-minus"></i></a>
+    <div class="divider"></div>
+    <a href="#" role="button" id="tablePopupButton" data-tooltip="Data Table"><i class="fa fa-table"></i></a>
+    <a role="tab" data-tooltip="Toggle Plot" onclick="toggleInfo()"><i class="fa fa-chart-line"></i></a>
+    <a role="tab" data-tooltip="Add Marker" id="addMarkerBtn"><i class="fa fa-map-location-dot"></i></a>
+    <a role="tab" data-tooltip="Remove All Markers"><i class="fa-solid fa-trash" onclick="removeAllDrawn()"></i></a>
+    <div class="divider"></div>
+    <a role="tab" data-tooltip="Map Settings" id="settingsBtn" onclick="openSettingsPopup()"><i class="fa fa-gears"></i></a>
+    <div class="divider"></div>
+    <a href="#" data-tooltip="References" onclick="openReferencePopup()"><i class="fa fa-book"></i></a>
+    <a href="#" data-tooltip="Research Group" onclick="openProfilePopup()"><i class="fa fa-users"></i></a>
+    <a href="https://github.com/mwu233/NIFA_WebDev" role="tab" target="_blank" data-tooltip="Go To Github "><i
+            class="fa-brands fa-github "></i></a>
 
-                <div class="settings-section">
-                    <h3>Choropleth Color Scheme</h3>
-                    <div class="color-selectors">
-                        <label>
-                            Start Color:
-                            <input type="color" id="startColorPicker" value="#ebf8b3">
-                        </label>
-                        <label>
-                            End Color:
-                            <input type="color" id="endColorPicker" value="#074359">
-                        </label>
-                    </div>
-                    <div id="legendPreview"></div>
-                    <button id="resetColorScheme" class="secondary-button">Reset to Default</button>
-                </div>
+    <!-- a few popups -->
+    <div id="settingsPopup" class="popup">
+        <div class="popup-content">
+            <span class="close">&times;</span>
+            <h2>Settings</h2>
 
-                <div class="settings-section">
-                    <h3>Base Map</h3>
-                    <select id="popupBaseMapSelector">
-                        <option value="OpenStreetMap">OpenStreetMap</option>
-                        <option value="CartoDB Positron">CartoDB Positron</option>
-                        <option value="Esri WorldTerrain">Esri WorldTerrain</option>
-                        <option value="Esri WorldShadedRelief">Esri WorldShadedRelief</option>
-                        <option value="Esri NatGeoWorldMap">Esri NatGeoWorldMap</option>
-                        <option value="USGS USTopo">USGS USTopo</option>
-                    </select>
+            <div class="settings-section">
+                <h3>Choropleth Color Scheme</h3>
+                <div class="color-selectors">
+                    <label>
+                        Start Color:
+                        <input type="color" id="startColorPicker" value="#ebf8b3">
+                    </label>
+                    <label>
+                        End Color:
+                        <input type="color" id="endColorPicker" value="#074359">
+                    </label>
                 </div>
+                <div id="legendPreview"></div>
+                <button id="resetColorScheme" class="secondary-button">Reset to Default</button>
+            </div>
 
-                <div class="popup-buttons">
-                    <button id="applySettings" class="primary-button">Apply</button>
-                    <button id="cancelSettings" class="secondary-button">Cancel</button>
+            <div class="settings-section">
+                <h3>Transparency Settings</h3>
+                <div>
+                    <label for="choroplethOpacity">Choropleth Opacity:</label>
+                    <input type="range" id="choroplethOpacity" min="0" max="1" step="0.1" value="0.65">
+                    <span id="choroplethOpacityValue">0.65</span>
                 </div>
+            </div>
+
+            <div class="settings-section">
+                <h3>Base Map</h3>
+                <select id="popupBaseMapSelector">
+                    <option value="OpenStreetMap">OpenStreetMap</option>
+                    <option value="CartoDB Positron">CartoDB Positron</option>
+                    <option value="Esri WorldTerrain">Esri WorldTerrain</option>
+                    <option value="Esri WorldShadedRelief">Esri WorldShadedRelief</option>
+                    <option value="Esri NatGeoWorldMap">Esri NatGeoWorldMap</option>
+                    <option value="USGS USTopo">USGS USTopo</option>
+                </select>
+            </div>
+
+            <div class="popup-buttons">
+                <button id="applySettings" class="primary-button">Apply</button>
+                <button id="cancelSettings" class="secondary-button">Cancel</button>
             </div>
         </div>
-    <a role="tab"><i class="fa-solid fa-trash" onclick="removeAllDrawn()"></i></a>
-    <a role="tab"><i class="" ></i></a>
     </div>
+    <div id="referencePopup" class="popup">
+        <div class="popup-content">
+            <span class="close" onclick="closePopup('referencePopup')">&times;</span>
+            <h2>References</h2>
+            <p>References: <a href="https://www.sciencedirect.com/science/article/abs/pii/S0034425721001267" role="tab"
+                              target="_blank">Corn yield prediction and uncertainty analysis based on remotely sensed
+                variables using a Bayesian neural network approach</a>.</p>
+            <p>In this project, we have developed models and tools to provide near real-time in-season crop yield
+                predictions for two mainly commodity crops (i.e., corn and soybeans) at the county-level for the CONUS,
+                based on state-of-the-art remote sensing and deep learning technologies. </p>
+            <p>The predicted yield information will be disseminated through a web-based cyber-platform for free public use,
+                which is critical for a variety of stakeholders, such as for US producers to make operational decisions; for
+                insurance companies to help with claim and compliance assessment; for agricultural finance companies to
+                support businesses of distribution, processing, and marketing. </p>
+            <p>The predicted yield information will also be delivered to USDA for decision support to maintain the stability
+                of the food supply and price, to reduce food security threats. The proposed tool could potentially reduce
+                the USDA NASS survey response burden and cost, improve the efficiency and data quality, and enhance USDA
+                NASS crop yield prediction capability. </p>
+            <p>Therefore, the proposed project will add value to NASS's existing crop yield estimation program and have
+                broad impacts on many stakeholders.</p>
+        </div>
+    </div>
+    <div id="profilePopup" class="popup">
+        <div class="popup-content">
+            <span class="close" onclick="closePopup('profilePopup')">&times;</span>
+            <h2>Research Group</h2>
+            <p>Zhou Zhang, UW-Madison, zzhang347@wisc.edu;</p>
+            <p>Yuchi Ma, UW-Madison, ma286@wisc.edu;</p>
+            <p>Zeyu Cao, UW-Madison, zcao96@wisc.edu;</p>
+            <p>Zhengwei Yang, REE-NASS, zhengwei.yang@usda.gov;</p>
+            <p>Qunying Huang, UW-Madison, qhuang46@wisc.edu;</p>
+            <p>Meiliu Wu, UW-Madison, mwu233@wisc.edu;</p>
+            <p>Songxi Yang, UW-Madison, songxi.yang@wisc.edu;</p>
+            <p>Haiyue Liu, UW-Madison, hliu746@wisc.edu;</p>
+        </div>
+    </div>
+</div>
 
+<div id="sidebar" class="sidebar collapsed">
+    <ul role="tablist" class="sidebar-tabs">
+        <li><a href="#run" role="tab" data-tooltip="Run Model"><i class="fa fa-play"></i></a></li>
+        <li><a href="#search" role="tab" data-tooltip="Data Search"><i class="fa fa-search"></i></a></li>
+        <li><a href="#visualization" role="tab" data-tooltip="Visualization"><i class="fa fa-chart-bar"></i></a></li>
+        <li><a href="#mapping" role="tab" data-tooltip="Mapping and download"><i class="fa fa-map"></i></a></li>
+    </ul>
 
-    <div id="sidebar" class="sidebar collapsed">
-        <!-- Nav tabs -->
-<!--        <div class="sidebar-tabs">-->
-<!--            <ul role="tablist">-->
-<!--                <li><a href="#run" role="tab" title="Run Model"><i class="fa-solid fa-play-circle fa-lg"></i></a></li>-->
-<!--                <li><a href="#search" role="tab" title="Data Search"><i class="fa-solid fa-filter fa-lg"></i></a></li>-->
-<!--                <li><a href="#visualization" role="tab" title="Visualization"><i class="fa-solid fa-chart-simple fa-lg"></i></a></li>-->
-<!--                <li><a href="#mapping" role="tab" title="Mapping and download"><i class="fa-solid fa-globe fa-lg"></i></a></li>-->
-<!--&lt;!&ndash;                <li><a href="#testtab" role="tab" title="Test Tab"><i class="fa-solid fa-globe fa-lg"></i></a> </li>&ndash;&gt;-->
-<!--            </ul>-->
+    <!-- Tab panes -->
+    <div class="sidebar-content">
 
-<!--            <ul role="tablist">-->
-<!--                <li><a href="#reference" role="tab"><i class="fa-solid fa-paperclip"></i></a></li>-->
-<!--                <li><a href="#profile" role="tab"><i class="fa-solid fa-users fa-lg"></i></a></li>-->
-<!--            </ul>-->
-<!--        </div>-->
+        <div class="sidebar-pane" id="run">
+            <h1 class="sidebar-header">Run Model<span class="sidebar-close"><i class="fa fa-caret-left"></i></span></h1>
+            <div id="runModelState">
+                <h3 style="margin-bottom:0px;margin-top: 5px;margin-left: 0px;">
+                    State:
+                </h3>
+                <div class="selector" style="width:300px;">
+                    <select id="runModelStateIn" style="width:150px;"></select>
+                </div>
+            </div>
 
-        <ul role="tablist" class="sidebar-tabs">
-            <li><a href="#run" role="tab" data-tooltip="Run Model"><i class="fa fa-play"></i></a></li>
-            <li><a href="#search" role="tab" data-tooltip="Data Search"><i class="fa fa-search"></i></a></li>
-            <li><a href="#visualization" role="tab" data-tooltip="Visualization"><i class="fa fa-chart-bar"></i></a></li>
-            <li><a href="#mapping" role="tab" data-tooltip="Mapping and download"><i class="fa fa-map"></i></a></li>
-            <li><a href="#reference" role="tab" data-tooltip="References"><i class="fa fa-book"></i></a></li>
-            <li><a href="#profile" role="tab" data-tooltip="Profile"><i class="fa fa-user"></i></a></li>
-        </ul>
+            <div>
+                <h3 style="margin-bottom:0px;margin-top: 5px;margin-left: 0px;">
+                    County:
+                </h3>
+                <div class="selector" style="width:300px;">
+                    <select id="runModelCountyIn" style="width:150px;"></select>
+                </div>
+            </div>
 
-        <!-- Tab panes -->
-        <div class="sidebar-content">
+            <div id="predictionTypeSelector">
+                <h3 style="margin-bottom:0px;margin-top: 25px;margin-left: 0px;">
+                    Prediction Type
+                </h3>
+                <label for="modelName"></label>
+                <select name="Model Type" id="predictionType" style="font-size: 16px; padding: 3px">
+                    <option value="In season">In Season</option>
+                    <option value="End of Season">End of Season</option>
+                </select>
+            </div>
 
-            <div class="sidebar-pane" id="run">
-                <h1 class="sidebar-header">Run Model<span class="sidebar-close"><i class="fa fa-caret-left"></i></span></h1>
+            <div id="modelSelector">
+                <h3 style="margin-bottom:0px;margin-top: 25px;margin-left: 0px;">
+                    Select a model:
+                </h3>
+                <label for="modelName"></label>
+                <select name="Model Type" id="modelName" style="font-size: 16px; padding: 3px">
+                    <option value="bayesian">Bayesian</option>
+                    <option value="pda">Partial domain adaptation</option>
+                    <option value="mil">Multiple Instance Learning</option>
+                    <option value="hybrid">Hybrid</option>
+                </select>
+            </div>
 
-<!--                <div id="modelLocationFillIn">-->
-<!--                    <h3 style="margin-bottom:0px;margin-top: 25px;margin-left: 0px;">-->
-<!--                        County:-->
-<!--                    </h3>-->
-<!--                    &lt;!&ndash;Make sure the form has the autocomplete function switched off:&ndash;&gt;-->
-<!--                    <form autocomplete="off" action="/action_page.php">-->
-<!--                        <div class="autocomplete" style="width:300px;">-->
-<!--                            <input id="modelLocationInput" type="text" name="County" placeholder="Enter a county">-->
-<!--                        </div>-->
-<!--                    </form>-->
-<!--                </div>-->
+            <div id="modelDrawnFeatures"></div>
 
-                <div id="runModelState">
-                    <h3 style="margin-bottom:0px;margin-top: 5px;margin-left: 0px;">
-                        State:
-                    </h3>
-                    <div class="selector" style="width:300px;">
-                        <select id="runModelStateIn"  style="width:150px;"></select>
+            <div id="modelInputButton" style="margin-top: 15px;">
+                <button class="btn apply" onclick="runModel()" style="margin-left: 15px;">Run Selected Model</button>
+            </div>
+
+        </div>
+
+        <div class="sidebar-pane" id="mapping">
+            <h1 class="sidebar-header">Mapping<span class="sidebar-close"><i class="fa fa-caret-left"></i></span></h1>
+            <div id="basemapSelector">
+                <h3 style="margin-bottom:0px;margin-top: 25px;margin-left: 0px;">
+                    Base Map:
+                </h3>
+                <label for="basemapInput"></label>
+                <select name="basemapInput" id="basemapInput" style="font-size: 16px; padding: 3px">
+                    <option value="OpenStreetMap">OpenStreetMap</option>
+                    <option value="Esri WorldTerrain">Esri WorldTerrain</option>
+                    <option value="Esri WorldShadedRelief">Esri WorldShadedRelief</option>
+                    <option value="Esri NatGeoWorldMap">Esri NatGeoWorldMap</option>
+                    <option value="CartoDB Positron">CartoDB Positron</option>
+                    <option value="USGS USTopo">USGS USTopo</option>
+                </select>
+            </div>
+            <div id="basemapButton" style="margin-top: 15px;">
+                <button class="btn apply" onclick="changeBaseMap()" style="margin-left: 15px;">Apply Basemap</button>
+            </div>
+
+            <div>
+                <div id="inputPanel">
+                    <div>
+                        <label for="userTitle" style="margin-bottom:0px;margin-top: 5px;">Title:</label>
+                        <br>
+                        <input type="text" class="input" id="userTitle" style="margin-bottom:0px;margin-top: 5px;">
+                    </div>
+                    <div>
+                        <label for="userDescription" style="margin-bottom:5px;margin-top: 5px;">Description:</label>
+                        <br>
+                        <textarea type="text" class="input" id="userDescription"
+                                  style="margin-bottom:5px;margin-top: 5px;white-space: pre" rows="10"
+                                  cols="35"></textarea>
+                    </div>
+                    <div>
+                        <label for="fontSelect" style="margin-bottom:5px;margin-top: 5px;">Font:</label>
+                        <select id="fontSelect">
+                            <option value="Arial">Arial</option>
+                            <option value="Verdana">Verdana</option>
+                            <option value="Helvetica">Helvetica</option>
+                            <option value="Times New Roman">Times New Roman</option>
+                            <option value="Georgia">Georgia</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label for="colorPicker" style="margin-bottom:5px;margin-top: 5px;">Background Color:</label>
+                        <input type="color" id="colorPicker" value="#ffffff"
+                               style="margin-bottom:15px;margin-top: 5px;">
+                    </div>
+                    <div>
+                        <label for="baseMapOn" style="margin-bottom:5px;margin-top: 5px;">Download with basemap
+                            on:</label>
+                        <input type="checkbox" id="baseMapOn" style="margin-bottom:15px;margin-top: 5px;"
+                               checked="true">
                     </div>
                 </div>
-
-                <div>
-                    <h3 style="margin-bottom:0px;margin-top: 5px;margin-left: 0px;">
-                        County:
-                    </h3>
-                    <div class="selector" style="width:300px;">
-                        <select id="runModelCountyIn"  style="width:150px;"></select>
-                    </div>
-                </div>
-
-                <div id="predictionTypeSelector">
-                    <h3 style="margin-bottom:0px;margin-top: 25px;margin-left: 0px;">
-                        Prediction Type
-                    </h3>
-                    <label for="modelName"></label>
-                    <select name="Model Type" id="predictionType" style="font-size: 16px; padding: 3px">
-                        <option value="In season">In Season</option>
-                        <option value="End of Season">End of Season</option>
-                    </select>
-                </div>
-
-                <div id="modelSelector">
-                    <h3 style="margin-bottom:0px;margin-top: 25px;margin-left: 0px;">
-                        Select a model:
-                    </h3>
-                    <label for="modelName"></label>
-                    <select name="Model Type" id="modelName" style="font-size: 16px; padding: 3px">
-                        <option value="bayesian">Bayesian</option>
-                        <option value="pda">Partial domain adaptation</option>
-                        <option value="mil">Multiple Instance Learning</option>
-                        <option value="hybrid">Hybrid</option>
-                    </select>
-                </div>
-
-                <div id="modelDrawnFeatures"></div>
-
-                <div id="modelInputButton" style="margin-top: 15px;">
-                    <button class="btn apply" onclick="runModel()" style="margin-left: 15px;">Run Selected Model</button>
-                </div>
+                <button class="btn" style="background:#3630a3;color:white;" onclick="previewFunc('mapid')">
+                    Preview
+                </button>
+                <button class="btn" style="background:#3630a3;color:white;" onclick="downloadFunc('mapid')">
+                    Download
+                </button>
 
             </div>
 
-            <div class="sidebar-pane" id="mapping">
-                <h1 class="sidebar-header">Mapping<span class="sidebar-close"><i class="fa fa-caret-left"></i></span></h1>
-                <div id="basemapSelector">
-                    <h3 style="margin-bottom:0px;margin-top: 25px;margin-left: 0px;">
-                        Base Map:
-                    </h3>
-                    <label for="basemapInput"></label>
-                    <select name="basemapInput" id="basemapInput" style="font-size: 16px; padding: 3px">
-                        <option value="OpenStreetMap">OpenStreetMap</option>
-                        <option value="Esri WorldTerrain">Esri WorldTerrain</option>
-                        <option value="Esri WorldShadedRelief">Esri WorldShadedRelief</option>
-                        <option value="Esri NatGeoWorldMap">Esri NatGeoWorldMap</option>
-                        <option value="CartoDB Positron">CartoDB Positron</option>
-                        <option value="USGS USTopo">USGS USTopo</option>
-                    </select>
-                </div>
-                <div id="basemapButton" style="margin-top: 15px;">
-                    <button class="btn apply" onclick="changeBaseMap()" style="margin-left: 15px;">Apply Basemap</button>
-                </div>
+        </div>
 
-                <div>
-                    <div id="inputPanel">
-                        <div>
-                            <label for="userTitle"  style="margin-bottom:0px;margin-top: 5px;" >Title:</label>
-                            <br>
-                            <input type="text" class="input" id="userTitle" style="margin-bottom:0px;margin-top: 5px;" >
-                        </div>
-                        <div>
-                            <label for="userDescription" style="margin-bottom:5px;margin-top: 5px;">Description:</label>
-                            <br>
-                            <textarea type="text" class="input" id="userDescription" style="margin-bottom:5px;margin-top: 5px;white-space: pre" rows="10" cols="35"></textarea>
-                        </div>
-                        <div>
-                            <label for="fontSelect" style="margin-bottom:5px;margin-top: 5px;">Font:</label>
-                            <select id="fontSelect">
-                                <option value="Arial">Arial</option>
-                                <option value="Verdana">Verdana</option>
-                                <option value="Helvetica">Helvetica</option>
-                                <option value="Times New Roman">Times New Roman</option>
-                                <option value="Georgia">Georgia</option>
-                            </select>
-                        </div>
-                        <div>
-                            <label for="colorPicker" style="margin-bottom:5px;margin-top: 5px;">Background Color:</label>
-                            <input type="color" id="colorPicker" value="#ffffff" style="margin-bottom:15px;margin-top: 5px;">
-                        </div>
-                        <div>
-                            <label for="baseMapOn" style="margin-bottom:5px;margin-top: 5px;">Download with basemap on:</label>
-                            <input type="checkbox" id="baseMapOn" style="margin-bottom:15px;margin-top: 5px;" checked="true">
-                        </div>
-                    </div>
-                    <button class="btn" style="background:#3630a3;color:white;" onclick="previewFunc('mapid')">
-                        Preview</button>
-                    <button class="btn" style="background:#3630a3;color:white;" onclick="downloadFunc('mapid')">
-                        Download</button>
+        <div class="sidebar-pane" id="search">
+            <h1 class="sidebar-header">Data Selection<span class="sidebar-close"><i class="fa fa-caret-left"></i></span>
+            </h1>
 
-                </div>
-
-            </div>
-
-            <div class="sidebar-pane" id="search">
-                <h1 class="sidebar-header">Data Selection<span class="sidebar-close"><i class="fa fa-caret-left"></i></span></h1>
-
-                <div>
+            <div>
 
                 <div id="filterState">
                     <h3 style="margin-bottom:0px;margin-top: 5px;margin-left: 0px;">
                         State:
                     </h3>
                     <div class="selector" style="width:300px;">
-                        <select id="filterStateIn"  style="width:150px;" onchange="updateTable()"></select>
+                        <select id="filterStateIn" style="width:150px;" onchange="updateTable()"></select>
                     </div>
                 </div>
 
@@ -311,156 +342,139 @@
                 </div>
 
                 <div id="controlButton" style="margin-top: 15px">
-                    <button class="btn apply" onclick="applySetting()" style="margin-left: 15px;margin-bottom: 10px">Apply Selections</button>
-                </div>
-
-                </div>
-
-
-
-                <select name="dataDownFormat" id="dataDownFormat" style="font-size: 16px; padding: 3px;margin-top: 10px">
-                    <option value="csv">CSV File</option>
-                    <option value="shp">ShapeFile</option>
-                    <option value="json">GeoJSON File</option>
-                </select>
-                <div id="DataDownButton" style="margin-top: 15px;">
-                    <button class="btn apply" onclick="downloadData()" style="margin-left: 15px;">Download Selections</button>
+                    <button class="btn apply" onclick="applySetting()" style="margin-left: 15px;margin-bottom: 10px">
+                        Apply Selections
+                    </button>
                 </div>
 
             </div>
 
-            <div class="sidebar-pane" id="visualization">
-                <h1 class="sidebar-header">Visualization<span class="sidebar-close"><i class="fa fa-caret-left"></i></span></h1>
 
-<!--                Location selection-->
-                <div id="plotCounty">
-                    <h3 style="margin-bottom:0px;margin-top: 5px;margin-left: 0px;">
-                        Location:
-                    </h3>
-                    <!--Make sure the form has the autocomplete function switched off:-->
-                    <form autocomplete="off" action="/action_page.php">
-                        <div class="autocomplete" style="width:300px;">
-                            <input id="plotCountyInput" type="text" name="location" placeholder="Enter a county">
-                        </div>
-                    </form>
-                </div>
+            <select name="dataDownFormat" id="dataDownFormat" style="font-size: 16px; padding: 3px;margin-top: 10px">
+                <option value="csv">CSV File</option>
+                <option value="shp">ShapeFile</option>
+                <option value="json">GeoJSON File</option>
+            </select>
+            <div id="DataDownButton" style="margin-top: 15px;">
+                <button class="btn apply" onclick="downloadData()" style="margin-left: 15px;">Download Selections
+                </button>
+            </div>
 
-                <div id="plotState">
-                    <h3 style="margin-bottom:0px;margin-top: 5px;margin-left: 0px;">
-                        State:
-                    </h3>
-                        <div class="selector" style="width:300px;">
-                            <select id="plotStateIn"  style="width:150px;"></select>
-                        </div>
-                </div>
+        </div>
 
-                <div>
-                    <h3 style="margin-bottom:0px;margin-top: 5px;margin-left: 0px;">
-                        County:
-                    </h3>
-                    <div class="selector" style="width:300px;">
-                        <select id="plotCountyIn"  style="width:150px;"></select>
+        <div class="sidebar-pane" id="visualization">
+            <h1 class="sidebar-header">Visualization<span class="sidebar-close"><i class="fa fa-caret-left"></i></span>
+            </h1>
+
+            <!--                Location selection-->
+            <div id="plotCounty">
+                <h3 style="margin-bottom:0px;margin-top: 5px;margin-left: 0px;">
+                    Location:
+                </h3>
+                <!--Make sure the form has the autocomplete function switched off:-->
+                <form autocomplete="off" action="/action_page.php">
+                    <div class="autocomplete" style="width:300px;">
+                        <input id="plotCountyInput" type="text" name="location" placeholder="Enter a county">
                     </div>
-                </div>
-
-                <div id="plotCrop">
-                    <h3 style="margin-bottom:0px;margin-top: 5px;margin-left: 0px;">
-                        Crop type:
-                    </h3>
-                    <label for="plotCropIn"></label>
-                    <select name="plotCropIn" id="plotCropIn" style="font-size: 16px; padding: 3px">
-                        <option value="corn">Corn</option>
-                        <option value="soybean">Soybean</option>
-                    </select>
-                </div>
-                <div>
-                    <button class="btn" style="background:#42a76f;color:white;" onclick="plotFunc()">
-                        Plot</button>
-                    <button class="btn" style="background:#42a76f;color:white;" onclick="downloadFunc('report')">
-                        Download Report</button>
-<!--                    <button class="btn" style="background:#3630a3;color:white;" onclick="downloadPDFFunc('report')">-->
-<!--                        Download PDF</button>-->
-                </div>
-
-                <div id="report" style="background: #ffffff">
-                    <h3 id="reportTitle" style="margin-bottom:0px;margin-top: 5px;margin-left: 0px;"></h3>
-                    <h4 id="reportSubTitle" style="margin-bottom:0px;margin-top: 5px;margin-left: 0px;">Statistics Summary:</h4>
-                    <div id="statistics" style="margin-bottom:5px;margin-top: 10px;margin-left: 0px;"></div>
-
-                    <div id="scatterP"></div>
-                </div>
-
-                <div id="drawnFeatures">
-                    <h3 style="margin-bottom:0px;margin-top: 5px;margin-left: 0px;">
-                        Drawn Features:
-                    </h3>
-                    <div id="drawnFeaturesList" style="margin-bottom:5px;margin-top: 10px;margin-left: 0px;"></div>
-                    <button class="btn" style="background:#42a76f;color:white;" onclick="removeAllDrawn()">
-                        Remove all drawn features</button>
-                </div>
-
-                </div>
-
-            <div class="sidebar-pane" id="reference">
-                <p>References: <a href="https://www.sciencedirect.com/science/article/abs/pii/S0034425721001267" role="tab" target="_blank">Corn yield prediction and uncertainty analysis based on remotely sensed variables using a Bayesian neural network approach</a>.</p>
-                <p>In this project, we have developed models and tools to provide near real-time in-season crop yield predictions for two mainly commodity crops (i.e., corn and soybeans) at the county-level for the CONUS, based on state-of-the-art remote sensing and deep learning technologies. </p>
-                <p>The predicted yield information will be disseminated through a web-based cyber-platform for free public use, which is critical for a variety of stakeholders, such as for US producers to make operational decisions; for insurance companies to help with claim and compliance assessment; for agricultural finance companies to support businesses of distribution, processing, and marketing. </p>
-                <p>The predicted yield information will also be delivered to USDA for decision support to maintain the stability of the food supply and price, to reduce food security threats. The proposed tool could potentially reduce the USDA NASS survey response burden and cost, improve the efficiency and data quality, and enhance USDA NASS crop yield prediction capability. </p>
-                <p>Therefore, the proposed project will add value to NASS's existing crop yield estimation program and have broad impacts on many stakeholders.</p>
+                </form>
             </div>
 
-            <div class="sidebar-pane" id="profile">
+            <div id="plotState">
+                <h3 style="margin-bottom:0px;margin-top: 5px;margin-left: 0px;">
+                    State:
+                </h3>
+                <div class="selector" style="width:300px;">
+                    <select id="plotStateIn" style="width:150px;"></select>
+                </div>
+            </div>
 
-                <h1 class="sidebar-header">Research Group<span class="sidebar-close"><i class="fa fa-caret-left"></i></span></h1>
-                <p>Zhou Zhang, UW-Madison, zzhang347@wisc.edu; </p>
-                <p>Yuchi Ma, UW-Madison, ma286@wisc.edu; </p>
-                <p>Zeyu Cao, UW-Madison, zcao96@wisc.edu; </p>
-                <p>Zhengwei Yang, REE-NASS, zhengwei.yang@usda.gov </p>
-                <p>Qunying Huang, UW-Madison, qhuang46@wisc.edu;</p>
-                <p>Meiliu Wu, UW-Madison, mwu233@wisc.edu; </p>
-                <p>Songxi Yang, UW-Madison, songxi.yang@wisc.edu;</p>
-                <p>Haiyue Liu, UW-Madison, hliu746@wisc.edu;</p>
-                
-    
+            <div>
+                <h3 style="margin-bottom:0px;margin-top: 5px;margin-left: 0px;">
+                    County:
+                </h3>
+                <div class="selector" style="width:300px;">
+                    <select id="plotCountyIn" style="width:150px;"></select>
+                </div>
+            </div>
 
+            <div id="plotCrop">
+                <h3 style="margin-bottom:0px;margin-top: 5px;margin-left: 0px;">
+                    Crop type:
+                </h3>
+                <label for="plotCropIn"></label>
+                <select name="plotCropIn" id="plotCropIn" style="font-size: 16px; padding: 3px">
+                    <option value="corn">Corn</option>
+                    <option value="soybean">Soybean</option>
+                </select>
+            </div>
+            <div>
+                <button class="btn" style="background:#42a76f;color:white;" onclick="plotFunc()">
+                    Plot
+                </button>
+                <button class="btn" style="background:#42a76f;color:white;" onclick="downloadFunc('report')">
+                    Download Report
+                </button>
+            </div>
+
+            <div id="report" style="background: #ffffff">
+                <h3 id="reportTitle" style="margin-bottom:0px;margin-top: 5px;margin-left: 0px;"></h3>
+                <h4 id="reportSubTitle" style="margin-bottom:0px;margin-top: 5px;margin-left: 0px;">Statistics
+                    Summary:</h4>
+                <div id="statistics" style="margin-bottom:5px;margin-top: 10px;margin-left: 0px;"></div>
+
+                <div id="scatterP"></div>
+            </div>
+
+            <div id="drawnFeatures">
+                <h3 style="margin-bottom:0px;margin-top: 5px;margin-left: 0px;">
+                    Drawn Features:
+                </h3>
+                <div id="drawnFeaturesList" style="margin-bottom:5px;margin-top: 10px;margin-left: 0px;"></div>
+                <button class="btn" style="background:#42a76f;color:white;" onclick="removeAllDrawn()">
+                    Remove all drawn features
+                </button>
             </div>
 
         </div>
     </div>
+</div>
 
+<div id="mapid">
+    <div id="map"></div>
+</div>
 
-    <div id = "mapid">
-        <div id="map"></div>
+<div id="popup" class="progress-popup">
+    <div class="progress-container">
+        <div class="progress-bar" id="progress-bar"></div>
     </div>
+    <button onclick="closePopup()">Close</button>
+</div>
 
-    <div id="popup" class="progress-popup">
-        <div class="progress-container">
-            <div class="progress-bar" id="progress-bar"></div>
-        </div>
-        <button onclick="closePopup()">Close</button>
-    </div>
+<script src="https://unpkg.com/leaflet@1.6.0/dist/leaflet.js"
+        integrity="sha512-gZwIG9x3wUXg2hdXF6+rVkLF/0Vi9U8D2Ntg4Ga5I5BZpVkVxlJWbSQtXPSiUTtC0TjtGOmxa1AJPuV0CPthew=="
+        crossorigin=""></script>
+<script type="text/javascript" src="lib/jquery-3.3.1.js"></script>
+<script type="text/javascript"
+        src="https://cdnjs.cloudflare.com/ajax/libs/dom-to-image-more/3.3.0/dom-to-image-more.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/dom-to-image-more/3.3.0/dom-to-image-more.min.js.map"></script>
+<script src="https://code.jquery.com/jquery-1.12.4.js"></script>
+<script src="https://code.jquery.com/ui/1.12.1/jquery-ui.js"></script>
+<script type="text/javascript" src="lib/leaflet/leaflet-src.js"></script>
+<script type="text/javascript" src="lib/leaflet-control-bar.js"></script>
+<script type="text/javascript" src="lib/leaflet-sidebar.js"></script>
+<script type="text/javascript" src="lib/d3.v4.js"></script>
+<script type="text/javascript" src="js/main.js"></script>
+<script src="https://d3js.org/d3-quadtree.v2.min.js"></script>
 
-    <script src="https://unpkg.com/leaflet@1.6.0/dist/leaflet.js" integrity="sha512-gZwIG9x3wUXg2hdXF6+rVkLF/0Vi9U8D2Ntg4Ga5I5BZpVkVxlJWbSQtXPSiUTtC0TjtGOmxa1AJPuV0CPthew==" crossorigin=""></script>
-    <script type="text/javascript" src="lib/jquery-3.3.1.js"></script>
-    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/dom-to-image-more/3.3.0/dom-to-image-more.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/dom-to-image-more/3.3.0/dom-to-image-more.min.js.map"></script>
-    <script src="https://code.jquery.com/jquery-1.12.4.js"></script>
-    <script src="https://code.jquery.com/ui/1.12.1/jquery-ui.js"></script>
-    <script type="text/javascript" src="lib/leaflet/leaflet-src.js"></script>
-    <script type="text/javascript" src="lib/leaflet-control-bar.js"></script>
-    <script type="text/javascript" src="lib/leaflet-sidebar.js"></script>
-    <script type="text/javascript" src="lib/d3.v4.js"></script>
-    <script type="text/javascript" src="js/main.js"></script>
-    <script src="https://d3js.org/d3-quadtree.v2.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/canvg/1.1/canvg.js"></script>
+<script src="https://unpkg.com/jspdf@latest/dist/jspdf.umd.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet.draw/0.4.2/leaflet.draw.js"></script>
+<script src="https://html2canvas.hertzen.com/dist/html2canvas.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@turf/turf@6/turf.min.js"></script>
 
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/canvg/1.1/canvg.js"></script>
-    <script src="https://unpkg.com/jspdf@latest/dist/jspdf.umd.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet.draw/0.4.2/leaflet.draw.js"></script>
-    <script src="https://html2canvas.hertzen.com/dist/html2canvas.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/@turf/turf@6/turf.min.js"></script>
-
-    <script type="text/javascript" src="https://unpkg.com/tabulator-tables@6.2.1/dist/js/tabulator.min.js"></script>
-    <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/toastify-js"></script>
+<script type="text/javascript" src="https://unpkg.com/tabulator-tables@6.2.1/dist/js/tabulator.min.js"></script>
+<script type="text/javascript" src="https://cdn.jsdelivr.net/npm/toastify-js"
+        crossorigin=""></script>
 
 
 </body>
