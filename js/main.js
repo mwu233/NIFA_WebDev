@@ -904,38 +904,38 @@ function createLegend(map){
     makeDraggable(curLegend)
 }
 
-window.onresize = function(event) {
-    var windowWidth = window.innerWidth;
-    var windowHeight = window.innerHeight;
-
-    const legendDiv = document.getElementsByClassName('info legend')[0]
-    const curInfoDiv = document.getElementsByClassName('info')[0]
-
-    function checkOverlap(control1, control2) {
-        var rect1 = control1.getContainer().getBoundingClientRect();
-        var rect2 = control2.getContainer().getBoundingClientRect();
-
-        var overlap = !(
-            rect1.right < rect2.left ||
-            rect1.left > rect2.right ||
-            rect1.bottom < rect2.top ||
-            rect1.top > rect2.bottom
-        );
-        return overlap;
-    }
-
-
-    if (checkOverlap(curLegend, curInfo)) {
-        curLegend.getContainer().style.display = 'none';
-        // console.log(legendDiv)
-    } else {
-        curLegend.getContainer().style.display = 'block';
-        if(checkOverlap(curLegend, curInfo)){
-            curLegend.getContainer().style.display = 'none';
-        }
-    }
-
-}
+// window.onresize = function(event) {
+//     var windowWidth = window.innerWidth;
+//     var windowHeight = window.innerHeight;
+//
+//     const legendDiv = document.getElementsByClassName('info legend')[0]
+//     const curInfoDiv = document.getElementsByClassName('info')[0]
+//
+//     function checkOverlap(control1, control2) {
+//         var rect1 = control1.getContainer().getBoundingClientRect();
+//         var rect2 = control2.getContainer().getBoundingClientRect();
+//
+//         var overlap = !(
+//             rect1.right < rect2.left ||
+//             rect1.left > rect2.right ||
+//             rect1.bottom < rect2.top ||
+//             rect1.top > rect2.bottom
+//         );
+//         return overlap;
+//     }
+//
+//
+//     if (checkOverlap(curLegend, curInfo)) {
+//         curLegend.getContainer().style.display = 'none';
+//         // console.log(legendDiv)
+//     } else {
+//         curLegend.getContainer().style.display = 'block';
+//         if(checkOverlap(curLegend, curInfo)){
+//             curLegend.getContainer().style.display = 'none';
+//         }
+//     }
+//
+// }
 
 let curTable;
 let tableDiv;
@@ -1108,31 +1108,7 @@ We do so by setting a global variable drawFlag to 'run'.
  */
 function createSideMenu(map) {
 
-    let curTab;
     let lastOpenedTab;
-    // L.Control.Sidebar.prototype._onClick = function() {
-    //     var tabId = this.querySelector('a').hash.slice(1);
-    //
-    //         // Call the original _onClick function for other tabs
-    //         if (L.DomUtil.hasClass(this, 'active')) {
-    //             this._sidebar.close();
-    //         } else if (!L.DomUtil.hasClass(this, 'disabled')) {
-    //             this._sidebar.open(tabId);
-    //             if (tabId === 'run') {
-    //                 curTileLayer.remove()
-    //                 curLayer.remove()
-    //                 curLegend.remove()
-    //                 curInfo.remove()
-    //                 drawFlag = 'run';
-    //             } else {
-    //                 curTileLayer.addTo(curMap);
-    //                 curLayer.addTo(curMap);
-    //                 curLegend.addTo(curMap);
-    //                 curInfo.addTo(curMap);
-    //                 drawFlag = 'normal';
-    //             }
-    //         }
-    // };
 
     L.Control.Sidebar.prototype._onClick = function() {
         let tabId = this.querySelector('a').hash.slice(1);
@@ -1174,14 +1150,14 @@ function createSideMenu(map) {
     sidebar.on('opening', function() {
         // Add your custom code here for when the sidebar opens
         addControlKeyListeners()
-        hideCurInfo()
+        // hideCurInfo()
     });
 
     sidebar.on('closing', function() {
         console.log("Sidebar is closing");
         // Add your custom code here for when the sidebar closes
         removeControlKeyListeners()
-        showCurInfo()
+        // showCurInfo()
     });
 
 }
