@@ -32,12 +32,14 @@
     <a id="homeButton" role="tab" data-tooltip="Reset View" onclick="curMap.setView([39.8283, -98.5795], 5);"><i class="fas fa-home"></i></a>
     <a href="#" id="zoomOutBtn" role="tab" data-tooltip="Zoom Out"><i class="fas fa-minus"></i></a>
     <div class="divider"></div>
-    <a href="#" role="button" id="tablePopupButton" data-tooltip="Data Table"><i class="fa fa-table"></i></a>
-    <a role="tab" data-tooltip="Toggle Plot" onclick="toggleInfo()"><i class="fa fa-chart-line"></i></a>
+
     <a role="tab" data-tooltip="Add Marker" id="addMarkerBtn"><i class="fa fa-map-location-dot"></i></a>
     <a role="tab" data-tooltip="Remove All Markers"><i class="fa-solid fa-trash" onclick="removeAllDrawn()"></i></a>
-    <div class="divider"></div>
+    <a role="tab" data-tooltip="Toggle Plot" onclick="toggleInfo()"><i class="fa fa-chart-line"></i></a>
     <a role="tab" data-tooltip="Map Settings" id="settingsBtn" onclick="openSettingsPopup()"><i class="fa fa-gears"></i></a>
+
+    <div class="divider"></div>
+    <a href="#" role="button" id="tablePopupButton" data-tooltip="Data Table"><i class="fa fa-table"></i></a>
     <div class="divider"></div>
     <a href="#" data-tooltip="References" onclick="openReferencePopup()"><i class="fa fa-book"></i></a>
     <a href="#" data-tooltip="Research Group" onclick="openProfilePopup()"><i class="fa fa-users"></i></a>
@@ -134,9 +136,9 @@
 <div id="sidebar" class="sidebar collapsed">
     <ul role="tablist" class="sidebar-tabs">
         <li><a href="#run" role="tab" data-tooltip="Run Model"><i class="fa fa-play"></i></a></li>
-        <li><a href="#search" role="tab" data-tooltip="Data Search"><i class="fa fa-search"></i></a></li>
+        <li><a href="#search" role="tab" data-tooltip="Search"><i class="fa fa-search"></i></a></li>
         <li><a href="#visualization" role="tab" data-tooltip="Visualization"><i class="fa fa-chart-bar"></i></a></li>
-        <li><a href="#mapping" role="tab" data-tooltip="Mapping and download"><i class="fa fa-map"></i></a></li>
+        <li><a href="#mapping" role="tab" data-tooltip="Mapping"><i class="fa fa-map"></i></a></li>
     </ul>
 
     <!-- Tab panes -->
@@ -262,7 +264,7 @@
         </div>
 
         <div class="sidebar-pane" id="search">
-            <h1 class="sidebar-header">Data Selection<span class="sidebar-close"><i class="fa fa-caret-left"></i></span>
+            <h1 class="sidebar-header">Search<span class="sidebar-close"><i class="fa fa-caret-left"></i></span>
             </h1>
 
             <div>
